@@ -1,0 +1,38 @@
+# Data directory
+data/
+data_download/
+processed_data/
+
+# Experiment outputs
+experiment/results/
+experiment_focused/output/
+workflow/output/
+
+# Git repositories (submodules)
+experiment/
+experiment_focused/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment variables (contains API keys)
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Zip archives
+*.zip
+
+# Large raw data files
+*.xlsx
+*.h5
+*.dyna
+*.pkl
