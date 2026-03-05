@@ -423,7 +423,10 @@ def load_road_info(road_type: str) -> pd.DataFrame:
         return _road_info_cache[road_type]
 
     # ファイルパスを確定（サーバー/ローカルの互換性のために複数のベースディレクトリを試す）
+    # 相对路径：workflow/data/
+    workflow_data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
     candidate_dirs = [
+        workflow_data_dir,
         "/Users/huangdizhi/Desktop/projects/predict_workflow/data",
         "/home/dizhihuang/graduate/predict_workflow/data",
         os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data"),
@@ -741,7 +744,7 @@ def call_llm_for_date_parsing(user_input: str, use_real_llm: bool = True, api_ke
     return call_openai_api_for_parsing(user_input, api_key)
 
 def enhanced_generate_file_paths(user_input: str,
-                                base_dir: str = "/Users/huangdizhi/Desktop/projects/predict_workflow/data/processed_data",
+                                base_dir: str = None,
                                 use_llm: bool = True,
                                 api_key: str = None,
                                 date_matching_strategy: str = "same_date") -> List[str]:
@@ -760,6 +763,9 @@ def enhanced_generate_file_paths(user_input: str,
     Returns:
         一致したファイルパスリスト（通常3年份のファイルを含む）
     """
+    # デフォルトパスを設定
+    if base_dir is None:
+        base_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "processed_data")
     print(f"📝 Parsing user input: {user_input}")
 
     # ステップ1：ユーザー入力を解析（LLMを使用必須）
@@ -849,7 +855,7 @@ def generate_file_path_enhanced(route: Optional[str], time: Optional[str],
     """
     元の関数の強化版，月付・方向と複数ファイル返回をサポート
     """
-    base_dir = "/Users/huangdizhi/Desktop/projects/predict_workflow/data/processed_data"
+    base_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "processed_data")
 
     # 路線名称を標準化
     route_mapping = {
@@ -2594,8 +2600,11 @@ def visualize_direction_aware_polygons(triangles: List[Dict[str, Any]], output_p
 def load_weather_for_dates(
     road: str,
     dates: List[str],
-    weather_dir: str = "/Users/huangdizhi/Desktop/projects/predict_workflow/data/processed_weather"
+    weather_dir: str = None
 ) -> Dict[str, Dict]:
+    # デフォルトパスを設定
+    if weather_dir is None:
+        weather_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "processed_weather")
     """
     读取指定日期的天气数据摘要
 

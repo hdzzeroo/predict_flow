@@ -1,4 +1,4 @@
-# 交通拥堵预测ワークフロー (Traffic Congestion Prediction Workflow)
+# 交通拥堵予測ワークフロー (Traffic Congestion Prediction Workflow)
 
 ## 概要
 
@@ -43,12 +43,67 @@ result = test_complete_workflow(
 | `visualization_*.py` | 可視化機能 |
 | `test_complete_workflow.py` | 完全ワークフローテスト |
 
+## データディレクトリ
+
+### データの配置
+
+データは `workflow/data/` ディレクトリに配置する必要があります：
+
+```
+workflow/
+├── data/                    # データディレクトリ（ユーザーが用意）
+│   ├── processed_data/      # 処理済み交通データ（CSV）
+│   ├── processed_weather/   # 天気データ
+│   └── roadic_*.csv        # 道路情報
+├── functions.py
+├── implementation.py
+└── ...
+```
+
+### 必要なデータファイル
+
+| ディレクトリ | 説明 | 必須 |
+|-------------|------|------|
+| `processed_data/` | 処理済み交通拥堵データ（CSV） | ○ |
+| `processed_weather/` | 天気データ（オプション） | × |
+| `roadic_kannetsu.csv` | 関越道の道路情報 | ○ |
+| `roadic_touhoku.csv` | 東北道の道路情報 | ○ |
+
+### データファイルの入手方法
+
+1. **RoadIC データ**: 道路情報公司将提供
+2. **既存データ**: プロジェクト既存の `data/` ディレクトリをコピー
+
+```bash
+# データディレクトリを作成してコピー
+mkdir -p workflow/data
+cp -r /path/to/your/data/* workflow/data/
+```
+
 ## 依存関係
 
 - pandas, numpy, matplotlib
 - scikit-learn (DBSCANクラスタリング)
 - openai / anthropic (LLM呼び出し)
 
-## データディレクトリ
+### インストール
 
-データファイルは `../data/` ディレクトリに保存されています
+```bash
+pip install pandas numpy matplotlib scikit-learn scipy shapely langgraph openai python-dotenv
+```
+
+## 環境設定
+
+### OpenAI API キー
+
+```bash
+# 環境変数を設定
+export OPENAI_API_KEY="sk-your-api-key-here"
+
+# または .env ファイルを作成
+echo 'OPENAI_API_KEY="sk-your-api-key-here"' > workflow/.env
+```
+
+## ライセンス
+
+このプロジェクトは学術研究を目的としています。

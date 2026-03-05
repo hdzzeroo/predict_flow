@@ -18,8 +18,8 @@ class Config:
         self.openai_max_tokens: int = 8000  # 足够输出detailed thinking + hotspots
         self.openai_timeout: int = 60  # gpt-4o稍慢，保持60秒超时
         
-        # 数据路径配置
-        self.data_base_dir: str = "/Users/huangdizhi/Desktop/projects/predict_workflow/data"
+        # 数据路径配置（相对于当前文件位置）
+        self.data_base_dir: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
         
         # LLM配置
         self.use_real_llm: bool = True  # 是否使用真实LLM API

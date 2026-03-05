@@ -2,6 +2,7 @@
 data/
 data_download/
 processed_data/
+workflow/data/
 
 # Experiment outputs
 experiment/results/
