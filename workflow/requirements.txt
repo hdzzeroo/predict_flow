@@ -1,0 +1,30 @@
+# 交通拥堵予測ワークフロー - 依存関係
+
+# データ処理
+pandas>=1.5.0
+numpy>=1.21.0
+
+# 可視化
+matplotlib>=3.5.0
+
+# 機械学習・クラスタリング
+scikit-learn>=1.0.0
+scipy>=1.7.0
+
+# 地理空間処理
+shapely>=2.0.0
+
+# LLM・AI
+openai>=1.0.0
+
+# ワークフロー
+langgraph>=0.0.20
+
+# 環境設定
+python-dotenv>=1.0.0
+typing-extensions>=4.5.0
+
+# 開発用（オプション）
+# pytest>=7.0.0
+# black>=22.0.0
+# flake8>=4.0.0
