@@ -1,0 +1,499 @@
+{
+  "user_input": "2025/5/4関越",
+  "file_path": "/home/dizhihuang/graduate/predict_workflow/data/processed_data/関越道_上_2014_05-04.csv",
+  "file_paths": [
+    "/home/dizhihuang/graduate/predict_workflow/data/processed_data/関越道_上_2014_05-04.csv",
+    "/home/dizhihuang/graduate/predict_workflow/data/processed_data/関越道_上_2018_05-04.csv",
+    "/home/dizhihuang/graduate/predict_workflow/data/processed_data/関越道_上_2024_05-04.csv",
+    "/home/dizhihuang/graduate/predict_workflow/data/processed_data/関越道_下_2014_05-04.csv",
+    "/home/dizhihuang/graduate/predict_workflow/data/processed_data/関越道_下_2018_05-04.csv",
+    "/home/dizhihuang/graduate/predict_workflow/data/processed_data/関越道_下_2024_05-04.csv"
+  ],
+  "route": "関越道",
+  "ts": "Year 2025, Month 5, Day 4",
+  "target_year": 2025,
+  "target_month": 5,
+  "target_day": 4,
+  "triangles": [
+    {
+      "id": 0,
+      "center": [
+        1.0333333333333334,
+        1055.0
+      ],
+      "area": 240.25,
+      "kp_range": [
+        0.0,
+        3.1
+      ],
+      "source_file": "関越道_上_2014_05-04"
+    },
+    {
+      "id": 1,
+      "center": [
+        47.900000000000006,
+        1237.5
+      ],
+      "area": 1815.0000000000073,
+      "kp_range": [
+        31.4,
+        64.4
+      ],
+      "source_file": "関越道_上_2014_05-04"
+    },
+    {
+      "id": 2,
+      "center": [
+        37.166666666666664,
+        955.0
+      ],
+      "area": 312.5,
+      "kp_range": [
+        33.0,
+        45.5
+      ],
+      "source_file": "関越道_上_2014_05-04"
+    },
+    {
+      "id": 3,
+      "center": [
+        41.25,
+        1083.75
+      ],
+      "area": 123.75,
+      "kp_range": [
+        33.0,
+        49.5
+      ],
+      "source_file": "関越道_上_2014_05-04"
+    },
+    {
+      "id": 4,
+      "center": [
+        39.25,
+        1346.25
+      ],
+      "area": 656.25,
+      "kp_range": [
+        33.0,
+        45.5
+      ],
+      "source_file": "関越道_上_2014_05-04"
+    },
+    {
+      "id": 5,
+      "center": [
+        36.9,
+        901.6666666666666
+      ],
+      "area": 172.5,
+      "kp_range": [
+        34.6,
+        41.5
+      ],
+      "source_file": "関越道_上_2014_05-04"
+    },
+    {
+      "id": 6,
+      "center": [
+        45.833333333333336,
+        1151.6666666666667
+      ],
+      "area": 1937.75,
+      "kp_range": [
+        34.6,
+        68.30000000000001
+      ],
+      "source_file": "関越道_上_2014_05-04"
+    },
+    {
+      "id": 7,
+      "center": [
+        40.56666666666666,
+        1043.3333333333333
+      ],
+      "area": 134.0,
+      "kp_range": [
+        36.1,
+        49.5
+      ],
+      "source_file": "関越道_上_2014_05-04"
+    },
+    {
+      "id": 8,
+      "center": [
+        54.9,
+        1287.5
+      ],
+      "area": 486.0,
+      "kp_range": [
+        49.5,
+        60.3
+      ],
+      "source_file": "関越道_上_2014_05-04"
+    },
+    {
+      "id": 9,
+      "center": [
+        60.23333333333333,
+        1016.6666666666666
+      ],
+      "area": 1963.5,
+      "kp_range": [
+        55.1,
+        70.5
+      ],
+      "source_file": "関越道_上_2014_05-04"
+    }
+  ],
+  "fig_path": "output/triangles_multi_関越道_上り_2014_20250504_054932.png",
+  "fig_paths": [
+    "output/triangles_multi_関越道_上り_2014_20250504_054932.png",
+    "output/triangles_multi_関越道_下り_2014_20250504_054934.png"
+  ],
+  "clusters": [
+    [
+      0,
+      19,
+      25
+    ],
+    [
+      1,
+      6
+    ],
+    [
+      2,
+      3,
+      5,
+      7
+    ],
+    [
+      4,
+      8,
+      27
+    ],
+    [
+      11,
+      22,
+      29
+    ],
+    [
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      24,
+      30,
+      31,
+      32,
+      33
+    ],
+    [
+      9
+    ],
+    [
+      10
+    ],
+    [
+      20
+    ],
+    [
+      21
+    ],
+    [
+      23
+    ],
+    [
+      26
+    ],
+    [
+      28
+    ],
+    [
+      34
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      15,
+      16,
+      17,
+      18,
+      19,
+      21,
+      22,
+      24,
+      26
+    ],
+    [
+      4,
+      7
+    ],
+    [
+      9,
+      10,
+      11,
+      12,
+      13,
+      29
+    ],
+    [
+      8
+    ],
+    [
+      14
+    ],
+    [
+      20
+    ],
+    [
+      23
+    ],
+    [
+      25
+    ],
+    [
+      27
+    ],
+    [
+      28
+    ]
+  ],
+  "hulls": [
+    {
+      "cluster_id": 0,
+      "cluster_size": 3,
+      "kp_range": [
+        -2.8000000000000003,
+        30.8
+      ],
+      "area": 3729.6000000000004
+    },
+    {
+      "cluster_id": 1,
+      "cluster_size": 2,
+      "kp_range": [
+        27.709999999999997,
+        71.99000000000001
+      ],
+      "area": 5977.800000000002
+    },
+    {
+      "cluster_id": 2,
+      "cluster_size": 4,
+      "kp_range": [
+        31.35,
+        51.15
+      ],
+      "area": 2613.5999999999995
+    },
+    {
+      "cluster_id": 3,
+      "cluster_size": 3,
+      "kp_range": [
+        30.27,
+        63.029999999999994
+      ],
+      "area": 3144.959999999999
+    },
+    {
+      "cluster_id": 4,
+      "cluster_size": 3,
+      "kp_range": [
+        75.39,
+        76.71
+      ],
+      "area": 47.519999999999754
+    },
+    {
+      "cluster_id": 5,
+      "cluster_size": 12,
+      "kp_range": [
+        90.19,
+        113.11
+      ],
+      "area": 3781.8
+    },
+    {
+      "cluster_id": 6,
+      "cluster_size": 1,
+      "kp_range": [
+        53.56,
+        72.04
+      ],
+      "area": 2827.4400000000005
+    },
+    {
+      "cluster_id": 7,
+      "cluster_size": 1,
+      "kp_range": [
+        53.78,
+        69.61999999999999
+      ],
+      "area": 332.63999999999976
+    },
+    {
+      "cluster_id": 8,
+      "cluster_size": 1,
+      "kp_range": [
+        31.15,
+        53.35
+      ],
+      "area": 1931.4000000000003
+    },
+    {
+      "cluster_id": 9,
+      "cluster_size": 1,
+      "kp_range": [
+        31.42,
+        69.58000000000001
+      ],
+      "area": 6067.440000000001
+    },
+    {
+      "cluster_id": 10,
+      "cluster_size": 1,
+      "kp_range": [
+        79.59,
+        82.10999999999999
+      ],
+      "area": 98.27999999999929
+    },
+    {
+      "cluster_id": 11,
+      "cluster_size": 1,
+      "kp_range": [
+        29.25,
+        74.25
+      ],
+      "area": 2835.0
+    },
+    {
+      "cluster_id": 12,
+      "cluster_size": 1,
+      "kp_range": [
+        75.19,
+        78.91
+      ],
+      "area": 368.27999999999986
+    },
+    {
+      "cluster_id": 13,
+      "cluster_size": 1,
+      "kp_range": [
+        31.62,
+        67.38000000000001
+      ],
+      "area": 6114.960000000001
+    },
+    {
+      "cluster_id": 0,
+      "cluster_size": 15,
+      "kp_range": [
+        -2.09,
+        61.39
+      ],
+      "area": 9141.12
+    },
+    {
+      "cluster_id": 1,
+      "cluster_size": 2,
+      "kp_range": [
+        13.82,
+        55.58
+      ],
+      "area": 3257.2799999999997
+    },
+    {
+      "cluster_id": 2,
+      "cluster_size": 6,
+      "kp_range": [
+        85.52,
+        103.28
+      ],
+      "area": 2184.4800000000005
+    },
+    {
+      "cluster_id": 3,
+      "cluster_size": 1,
+      "kp_range": [
+        2.200000000000001,
+        61.0
+      ],
+      "area": 5115.599999999999
+    },
+    {
+      "cluster_id": 4,
+      "cluster_size": 1,
+      "kp_range": [
+        122.60999999999999,
+        126.09
+      ],
+      "area": 229.6800000000012
+    },
+    {
+      "cluster_id": 5,
+      "cluster_size": 1,
+      "kp_range": [
+        9.02,
+        36.38
+      ],
+      "area": 3201.1200000000003
+    },
+    {
+      "cluster_id": 6,
+      "cluster_size": 1,
+      "kp_range": [
+        48.03,
+        52.47
+      ],
+      "area": 53.27999999999997
+    },
+    {
+      "cluster_id": 7,
+      "cluster_size": 1,
+      "kp_range": [
+        37.730000000000004,
+        57.77
+      ],
+      "area": 3967.9199999999996
+    },
+    {
+      "cluster_id": 8,
+      "cluster_size": 1,
+      "kp_range": [
+        9.189999999999998,
+        34.51
+      ],
+      "area": 6532.56
+    },
+    {
+      "cluster_id": 9,
+      "cluster_size": 1,
+      "kp_range": [
+        39.089999999999996,
+        42.81
+      ],
+      "area": 89.28000000000014
+    }
+  ],
+  "hull_fig_path": "output/hulls_関越道_上り_2014_20250504_054935.png",
+  "hull_summary": "## 上方向\n## Traffic Congestion Hotspot Analysis Report\nDetected 14 major traffic congestion hotspots:\n\n### Hotspot Area 1 (Cluster 5)\n- **Congestion Events**: 12 times\n- **Affected Section**: KP 90.2 - 113.1 km\n- **Time Period**: 14:47 - 20:17\n- **Coverage Area**: 3781.8 square units\n- **Section Length**: 22.9 km\n- **Duration**: 330 minutes\n\n### Hotspot Area 2 (Cluster 2)\n- **Congestion Events**: 4 times\n- **Affected Section**: KP 31.4 - 51.1 km\n- **Time Period**: 14:13 - 18:37\n- **Coverage Area**: 2613.6 square units\n- **Section Length**: 19.8 km\n- **Duration**: 264 minutes\n\n### Hotspot Area 3 (Cluster 0)\n- **Congestion Events**: 3 times\n- **Affected Section**: KP -2.8 - 30.8 km\n- **Time Period**: 16:01 - 19:43\n- **Coverage Area**: 3729.6 square units\n- **Section Length**: 33.6 km\n- **Duration**: 222 minutes\n\n### Hotspot Area 4 (Cluster 3)\n- **Congestion Events**: 3 times\n- **Affected Section**: KP 30.3 - 63.0 km\n- **Time Period**: 20:49 - 24:01\n- **Coverage Area**: 3145.0 square units\n- **Section Length**: 32.8 km\n- **Duration**: 192 minutes\n\n### Hotspot Area 5 (Cluster 4)\n- **Congestion Events**: 3 times\n- **Affected Section**: KP 75.4 - 76.7 km\n- **Time Period**: 18:59 - 20:11\n- **Coverage Area**: 47.5 square units\n- **Section Length**: 1.3 km\n- **Duration**: 72 minutes\n\n### Hotspot Area 6 (Cluster 1)\n- **Congestion Events**: 2 times\n- **Affected Section**: KP 27.7 - 72.0 km\n- **Time Period**: 17:52 - 22:22\n- **Coverage Area**: 5977.8 square units\n- **Section Length**: 44.3 km\n- **Duration**: 270 minutes\n\n### Hotspot Area 7 (Cluster 6)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 53.6 - 72.0 km\n- **Time Period**: 14:29 - 19:35\n- **Coverage Area**: 2827.4 square units\n- **Section Length**: 18.5 km\n- **Duration**: 306 minutes\n\n### Hotspot Area 8 (Cluster 7)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 53.8 - 69.6 km\n- **Time Period**: 19:21 - 20:03\n- **Coverage Area**: 332.6 square units\n- **Section Length**: 15.8 km\n- **Duration**: 42 minutes\n\n### Hotspot Area 9 (Cluster 8)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 31.1 - 53.4 km\n- **Time Period**: 16:00 - 18:54\n- **Coverage Area**: 1931.4 square units\n- **Section Length**: 22.2 km\n- **Duration**: 174 minutes\n\n### Hotspot Area 10 (Cluster 9)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 31.4 - 69.6 km\n- **Time Period**: 18:18 - 23:36\n- **Coverage Area**: 6067.4 square units\n- **Section Length**: 38.2 km\n- **Duration**: 318 minutes\n\n### Hotspot Area 11 (Cluster 10)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 79.6 - 82.1 km\n- **Time Period**: 09:18 - 10:36\n- **Coverage Area**: 98.3 square units\n- **Section Length**: 2.5 km\n- **Duration**: 78 minutes\n\n### Hotspot Area 12 (Cluster 11)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 29.2 - 74.2 km\n- **Time Period**: 14:59 - 17:05\n- **Coverage Area**: 2835.0 square units\n- **Section Length**: 45.0 km\n- **Duration**: 126 minutes\n\n### Hotspot Area 13 (Cluster 12)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 75.2 - 78.9 km\n- **Time Period**: 15:13 - 18:31\n- **Coverage Area**: 368.3 square units\n- **Section Length**: 3.7 km\n- **Duration**: 198 minutes\n\n### Hotspot Area 14 (Cluster 13)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 31.6 - 67.4 km\n- **Time Period**: 16:26 - 22:08\n- **Coverage Area**: 6115.0 square units\n- **Section Length**: 35.8 km\n- **Duration**: 342 minutes\n\n### Overall Analysis\n- **Total Congestion Events**: 35 times\n- **Average per Hotspot**: 2.5 congestion events\n- **Largest Hotspot**: 12 congestion events\n- **Hotspot Concentration**: Medium\n\n## 下方向\n## Traffic Congestion Hotspot Analysis Report\nDetected 10 major traffic congestion hotspots:\n\n### Hotspot Area 1 (Cluster 0)\n- **Congestion Events**: 15 times\n- **Affected Section**: KP -2.1 - 61.4 km\n- **Time Period**: 05:26 - 10:14\n- **Coverage Area**: 9141.1 square units\n- **Section Length**: 63.5 km\n- **Duration**: 288 minutes\n\n### Hotspot Area 2 (Cluster 2)\n- **Congestion Events**: 6 times\n- **Affected Section**: KP 85.5 - 103.3 km\n- **Time Period**: 08:49 - 12:55\n- **Coverage Area**: 2184.5 square units\n- **Section Length**: 17.8 km\n- **Duration**: 246 minutes\n\n### Hotspot Area 3 (Cluster 1)\n- **Congestion Events**: 2 times\n- **Affected Section**: KP 13.8 - 55.6 km\n- **Time Period**: 11:07 - 13:43\n- **Coverage Area**: 3257.3 square units\n- **Section Length**: 41.8 km\n- **Duration**: 156 minutes\n\n### Hotspot Area 4 (Cluster 3)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 2.2 - 61.0 km\n- **Time Period**: 08:40 - 11:34\n- **Coverage Area**: 5115.6 square units\n- **Section Length**: 58.8 km\n- **Duration**: 174 minutes\n\n### Hotspot Area 5 (Cluster 4)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 122.6 - 126.1 km\n- **Time Period**: 11:09 - 13:21\n- **Coverage Area**: 229.7 square units\n- **Section Length**: 3.5 km\n- **Duration**: 132 minutes\n\n### Hotspot Area 6 (Cluster 5)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 9.0 - 36.4 km\n- **Time Period**: 09:30 - 13:24\n- **Coverage Area**: 3201.1 square units\n- **Section Length**: 27.4 km\n- **Duration**: 234 minutes\n\n### Hotspot Area 7 (Cluster 6)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 48.0 - 52.5 km\n- **Time Period**: 13:28 - 13:52\n- **Coverage Area**: 53.3 square units\n- **Section Length**: 4.4 km\n- **Duration**: 24 minutes\n\n### Hotspot Area 8 (Cluster 7)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 37.7 - 57.8 km\n- **Time Period**: 07:27 - 14:03\n- **Coverage Area**: 3967.9 square units\n- **Section Length**: 20.0 km\n- **Duration**: 396 minutes\n\n### Hotspot Area 9 (Cluster 8)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 9.2 - 34.5 km\n- **Time Period**: 05:32 - 14:08\n- **Coverage Area**: 6532.6 square units\n- **Section Length**: 25.3 km\n- **Duration**: 516 minutes\n\n### Hotspot Area 10 (Cluster 9)\n- **Congestion Events**: 1 times\n- **Affected Section**: KP 39.1 - 42.8 km\n- **Time Period**: 09:46 - 10:34\n- **Coverage Area**: 89.3 square units\n- **Section Length**: 3.7 km\n- **Duration**: 48 minutes\n\n### Overall Analysis\n- **Total Congestion Events**: 30 times\n- **Average per Hotspot**: 3.0 congestion events\n- **Largest Hotspot**: 15 congestion events\n- **Hotspot Concentration**: Medium",
+  "final_report": "# Traffic Congestion Hotspot Location Analysis Report\n**Analysis Route**: 関越道\n**Analysis Time**: Year 2025, Month 5, Day 4\n**Analysis Mode**: Direction-Grouped Analysis\n**Analyzed Directions**: 上, 下\n**Generated Time**: 2025-10-01 05:49:39\n\n## Overall Data Overview\n- Total Congestion Events: 65\n- Total Identified Clusters: 24\n- Total Congestion Hotspots: 24\n\n## 上り方向 Analysis\n### Data Overview - 上り方向\n- Congestion Events: 35\n- Identified Clusters: 14\n- Congestion Hotspots: 14\n\n### Hotspot Details - 上り方向\nThe following are the major congestion hotspot areas identified for 上り方向:\n\n#### 上り方向 Hotspot 1 (Cluster 5)\n- **Congestion Frequency**: 12 times\n- **Location Range**: KP 90.2 - 113.1 km\n- **Time Range**: 14:47 - 20:17\n- **Section Length**: 22.9 km\n- **Duration**: 330 minutes\n- **Impact Intensity**: 3781.8 square units\n\n#### 上り方向 Hotspot 2 (Cluster 2)\n- **Congestion Frequency**: 4 times\n- **Location Range**: KP 31.4 - 51.1 km\n- **Time Range**: 14:13 - 18:37\n- **Section Length**: 19.8 km\n- **Duration**: 264 minutes\n- **Impact Intensity**: 2613.6 square units\n\n#### 上り方向 Hotspot 3 (Cluster 0)\n- **Congestion Frequency**: 3 times\n- **Location Range**: KP -2.8 - 30.8 km\n- **Time Range**: 16:01 - 19:43\n- **Section Length**: 33.6 km\n- **Duration**: 222 minutes\n- **Impact Intensity**: 3729.6 square units\n\n#### 上り方向 Hotspot 4 (Cluster 3)\n- **Congestion Frequency**: 3 times\n- **Location Range**: KP 30.3 - 63.0 km\n- **Time Range**: 20:49 - 24:01\n- **Section Length**: 32.8 km\n- **Duration**: 192 minutes\n- **Impact Intensity**: 3145.0 square units\n\n#### 上り方向 Hotspot 5 (Cluster 4)\n- **Congestion Frequency**: 3 times\n- **Location Range**: KP 75.4 - 76.7 km\n- **Time Range**: 18:59 - 20:11\n- **Section Length**: 1.3 km\n- **Duration**: 72 minutes\n- **Impact Intensity**: 47.5 square units\n\n#### 上り方向 Hotspot 6 (Cluster 1)\n- **Congestion Frequency**: 2 times\n- **Location Range**: KP 27.7 - 72.0 km\n- **Time Range**: 17:52 - 22:22\n- **Section Length**: 44.3 km\n- **Duration**: 270 minutes\n- **Impact Intensity**: 5977.8 square units\n\n#### 上り方向 Hotspot 7 (Cluster 6)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 53.6 - 72.0 km\n- **Time Range**: 14:29 - 19:35\n- **Section Length**: 18.5 km\n- **Duration**: 306 minutes\n- **Impact Intensity**: 2827.4 square units\n\n#### 上り方向 Hotspot 8 (Cluster 7)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 53.8 - 69.6 km\n- **Time Range**: 19:21 - 20:03\n- **Section Length**: 15.8 km\n- **Duration**: 42 minutes\n- **Impact Intensity**: 332.6 square units\n\n#### 上り方向 Hotspot 9 (Cluster 8)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 31.1 - 53.4 km\n- **Time Range**: 16:00 - 18:54\n- **Section Length**: 22.2 km\n- **Duration**: 174 minutes\n- **Impact Intensity**: 1931.4 square units\n\n#### 上り方向 Hotspot 10 (Cluster 9)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 31.4 - 69.6 km\n- **Time Range**: 18:18 - 23:36\n- **Section Length**: 38.2 km\n- **Duration**: 318 minutes\n- **Impact Intensity**: 6067.4 square units\n\n#### 上り方向 Hotspot 11 (Cluster 10)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 79.6 - 82.1 km\n- **Time Range**: 09:18 - 10:36\n- **Section Length**: 2.5 km\n- **Duration**: 78 minutes\n- **Impact Intensity**: 98.3 square units\n\n#### 上り方向 Hotspot 12 (Cluster 11)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 29.2 - 74.2 km\n- **Time Range**: 14:59 - 17:05\n- **Section Length**: 45.0 km\n- **Duration**: 126 minutes\n- **Impact Intensity**: 2835.0 square units\n\n#### 上り方向 Hotspot 13 (Cluster 12)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 75.2 - 78.9 km\n- **Time Range**: 15:13 - 18:31\n- **Section Length**: 3.7 km\n- **Duration**: 198 minutes\n- **Impact Intensity**: 368.3 square units\n\n#### 上り方向 Hotspot 14 (Cluster 13)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 31.6 - 67.4 km\n- **Time Range**: 16:26 - 22:08\n- **Section Length**: 35.8 km\n- **Duration**: 342 minutes\n- **Impact Intensity**: 6115.0 square units\n\n## 下り方向 Analysis\n### Data Overview - 下り方向\n- Congestion Events: 30\n- Identified Clusters: 10\n- Congestion Hotspots: 10\n\n### Hotspot Details - 下り方向\nThe following are the major congestion hotspot areas identified for 下り方向:\n\n#### 下り方向 Hotspot 1 (Cluster 0)\n- **Congestion Frequency**: 15 times\n- **Location Range**: KP -2.1 - 61.4 km\n- **Time Range**: 05:26 - 10:14\n- **Section Length**: 63.5 km\n- **Duration**: 288 minutes\n- **Impact Intensity**: 9141.1 square units\n\n#### 下り方向 Hotspot 2 (Cluster 2)\n- **Congestion Frequency**: 6 times\n- **Location Range**: KP 85.5 - 103.3 km\n- **Time Range**: 08:49 - 12:55\n- **Section Length**: 17.8 km\n- **Duration**: 246 minutes\n- **Impact Intensity**: 2184.5 square units\n\n#### 下り方向 Hotspot 3 (Cluster 1)\n- **Congestion Frequency**: 2 times\n- **Location Range**: KP 13.8 - 55.6 km\n- **Time Range**: 11:07 - 13:43\n- **Section Length**: 41.8 km\n- **Duration**: 156 minutes\n- **Impact Intensity**: 3257.3 square units\n\n#### 下り方向 Hotspot 4 (Cluster 3)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 2.2 - 61.0 km\n- **Time Range**: 08:40 - 11:34\n- **Section Length**: 58.8 km\n- **Duration**: 174 minutes\n- **Impact Intensity**: 5115.6 square units\n\n#### 下り方向 Hotspot 5 (Cluster 4)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 122.6 - 126.1 km\n- **Time Range**: 11:09 - 13:21\n- **Section Length**: 3.5 km\n- **Duration**: 132 minutes\n- **Impact Intensity**: 229.7 square units\n\n#### 下り方向 Hotspot 6 (Cluster 5)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 9.0 - 36.4 km\n- **Time Range**: 09:30 - 13:24\n- **Section Length**: 27.4 km\n- **Duration**: 234 minutes\n- **Impact Intensity**: 3201.1 square units\n\n#### 下り方向 Hotspot 7 (Cluster 6)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 48.0 - 52.5 km\n- **Time Range**: 13:28 - 13:52\n- **Section Length**: 4.4 km\n- **Duration**: 24 minutes\n- **Impact Intensity**: 53.3 square units\n\n#### 下り方向 Hotspot 8 (Cluster 7)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 37.7 - 57.8 km\n- **Time Range**: 07:27 - 14:03\n- **Section Length**: 20.0 km\n- **Duration**: 396 minutes\n- **Impact Intensity**: 3967.9 square units\n\n#### 下り方向 Hotspot 9 (Cluster 8)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 9.2 - 34.5 km\n- **Time Range**: 05:32 - 14:08\n- **Section Length**: 25.3 km\n- **Duration**: 516 minutes\n- **Impact Intensity**: 6532.6 square units\n\n#### 下り方向 Hotspot 10 (Cluster 9)\n- **Congestion Frequency**: 1 times\n- **Location Range**: KP 39.1 - 42.8 km\n- **Time Range**: 09:46 - 10:34\n- **Section Length**: 3.7 km\n- **Duration**: 48 minutes\n- **Impact Intensity**: 89.3 square units\n\n## Direction Comparison\nComparison of congestion patterns between different directions:\n\n**上り方向**:\n- Hotspots: 14, Events: 35\n- Most Severe: KP 90.2-113.1 km (12 times)\n\n**下り方向**:\n- Hotspots: 10, Events: 30\n- Most Severe: KP -2.1-61.4 km (15 times)\n\n## Summary and Recommendations\n**Most Congestion-Prone Direction**: 下り方向\n**Most Severe Hotspot**: KP -2.1-61.4 km\n**Peak Congestion Time**: 05:26-10:34\n**Congestion Frequency**: 15 times\n\n**Recommendations**:\n1. Focus monitoring and management on 下り方向\n2. Strengthen traffic control at KP -2.1-61.4 km\n3. Consider traffic flow optimization during peak hours 05:26-10:34\n4. Implement direction-specific traffic management strategies\n\n---\n*Report automatically generated by Traffic Congestion Prediction System*",
+  "csv_output_path": "/home/dizhihuang/graduate/predict_workflow/version1_2 copy/output/congestion_prediction_関越道_20250504_054939.csv",
+  "_metadata": {
+    "user_input": "2025/5/4関越",
+    "workflow_version": "version_1_1",
+    "execution_time": "2025-10-01T05:49:39.067533",
+    "total_triangles": 65,
+    "total_clusters": 24,
+    "total_hulls": 24
+  }
+}

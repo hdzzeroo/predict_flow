@@ -1,0 +1,24 @@
+# Multi-Agent Traffic Prediction System Configuration
+
+# Data paths
+data_path: "./data"
+output_path: "./output"
+
+# Triangle generation configuration
+triangle_config:
+  min_duration: 10        # 最小持续时间(分钟)
+  min_length: 0.5         # 最小拥堵长度(km)
+  time_resolution: 5      # 时间分辨率(分钟)
+  merge_threshold: 0.8    # 合并阈值
+
+# LLM configuration
+llm_config:
+  model: "gpt-4-vision-preview"
+  max_tokens: 2000
+  temperature: 0.1
+  timeout: 30
+  # api_key: ""  # Set via environment variable OPENAI_API_KEY
+
+# Logging configuration
+enable_logging: true
+log_level: "INFO"

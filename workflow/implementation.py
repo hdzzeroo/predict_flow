@@ -16,7 +16,7 @@ from functions import (extract_route_and_time, generate_file_path, process_traff
                      calculate_all_hull_triangles, visualize_triangles_with_hulls, create_hull_summary_report,
                      enhanced_generate_file_paths, call_llm_for_date_parsing,
                      process_multiple_traffic_data, process_direction_grouped_data, generate_unique_filename,
-                     # 新增的方向感知函数
+                     # 新規：方向感知関数
                      process_direction_aware_traffic_data, process_multiple_direction_aware_traffic_data,
                      generate_direction_aware_polygons, visualize_direction_aware_polygons,
                      extract_road_type_from_filename)
@@ -24,24 +24,24 @@ from config import config
 from stub import CustomAgent
 from excel_output_generator import generate_csv_prediction_output
 
-# 新增：导入LLM分析模块
+# 新規：LLM分析モジュールをインポート
 from llm_analyzer import create_batch_analyzer
 from data_preparers import OutputFormatter
 from visualization_comparison import visualize_all_directions_comparison, convert_hotspot_to_hull
 
 
 class TrafficState(TypedDict, total=False):
-    # —— 用户输入 ——
-    user_input: str                     # 原始指令
-    # —— 实验配置 ——
-    date_matching_strategy: Optional[str]  # 日期匹配策略: "same_date" | "same_weekday"
-    # —— Chatbot 节点输出 ——
-    file_path: str                      # 主要 CSV 路径（向后兼容）
-    file_paths: List[str]              # 多个 CSV 路径列表
-    route: str                          # 路段标识（可选）
-    ts: str                             # 时间字符串（可选）
-    direction: Optional[str]            # 用户指定的方向（"上"/"下"/None）
-    target_year: Optional[int]          # 预测目标年份
+    # —— ユーザー入力 ——
+    user_input: str                     # 生指示
+    # —— 実験設定 ——
+    date_matching_strategy: Optional[str]  # 日付マッチ策略: "same_date" | "same_weekday"
+    # —— Chatbot ノード出力 ——
+    file_path: str                      # 主なCSVパス（後方互換性）
+    file_paths: List[str]              # 複数CSVパスリスト
+    route: str                          # 道路識別（オプション）
+    ts: str                             # 時間文字列（オプション）
+    direction: Optional[str]            # ユーザー指定の方向（"上"/"下"/None）
+    target_year: # 予測対象 Optional[int]         年
     target_month: Optional[int]         # 预测目标月份
     target_day: Optional[int]           # 预测目标日期
     # —— 可视化节点输出 ——

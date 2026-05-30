@@ -2039,8 +2039,11 @@ def generate_direction_aware_polygons(df: pd.DataFrame, direction: str = None,
         # 时间坐标（转换为分钟）
         start_time = t2min(row["発生_t"])       # 拥堵开始时间 [分钟]
         peak_time = t2min(row["ピーク_t"])      # 拥堵峰值时间 [分钟]
+        # 跨日修正: ピーク時刻 < 発生時刻 の場合は翌日 (+1440 分)
+        if peak_time < start_time:
+            peak_time += 1440
         end_time = start_time + jam_duration    # 拥堵结束时间 [分钟]
-        
+
         # 根据方向决定拥堵扩展方向
         if direction == "上":  # KP增大方向（上り）
             # 拥堵向KP增大的方向扩展
@@ -2161,8 +2164,11 @@ def generate_polygons_from_data(df: pd.DataFrame) -> List[Dict[str, Any]]:
         # 时间坐标（转换为分钟）
         start_time = t2min(row["発生_t"])       # 拥堵开始时间 [分钟]
         peak_time = t2min(row["ピーク_t"])      # 拥堵峰值时间 [分钟]
+        # 跨日修正: 同上
+        if peak_time < start_time:
+            peak_time += 1440
         end_time = start_time + jam_duration    # 拥堵结束时间 [分钟]
-        
+
         # 定义四个关键顶点
         vertex1 = (start_kp, start_time)                           # 拥堵开始起点
         vertex2 = (start_kp + start_jam_length, start_time)        # 拥堵开始终点

@@ -9,14 +9,25 @@ experiment/results/
 experiment_focused/output/
 workflow/output/
 
-# Git repositories (submodules)
+# experiment_calendar large artifacts (result JSONs + visualization PNGs + intermediate output)
+experiment_calendar/results/
+experiment_calendar/output/
+
+# Git repositories (submodules / nested independent repos)
+# experiment_calendar/ は自身が独立 git repo (専用 remote へ push される)
 experiment/
 experiment_focused/
+experiment_calendar/
 
 # Python cache
 __pycache__/
+**/__pycache__/
 *.pyc
 *.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
 
 # Environment variables (contains API keys)
 .env

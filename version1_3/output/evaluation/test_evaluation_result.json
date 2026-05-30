@@ -1,0 +1,35 @@
+{
+  "evaluation_time": "2025-10-08 00:35:30",
+  "grid_resolution": {
+    "kp_step_km": 1.0,
+    "time_step_min": 60
+  },
+  "results": {
+    "下": {
+      "polygon_iou": 0.4796006944444444,
+      "grid_metrics": {
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1_score": 0.7499999999999999,
+        "grid_iou": 0.6
+      },
+      "spatial_iou": 0.65,
+      "temporal_iou": 0.7222222222222222,
+      "combined_iou": 0.46944444444444444,
+      "pred_count": 2,
+      "gt_count": 3
+    },
+    "average": {
+      "polygon_iou": 0.4796006944444444,
+      "grid_metrics": {
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1_score": 0.7499999999999999,
+        "grid_iou": 0.6
+      },
+      "spatial_iou": 0.65,
+      "temporal_iou": 0.7222222222222222,
+      "combined_iou": 0.46944444444444444
+    }
+  }
+}

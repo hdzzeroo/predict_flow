@@ -1,9 +1,9 @@
 """
-交通拥堵预测评估模块
-实现三种IoU评估指标：
-1. 全局多边形IoU
-2. 栅格化F1-Score
-3. 分层IoU（空间+时间）
+交通拥挤予測評価モジュール
+3種類のIoU評価指標を実現：
+1. グローバルポリゴンIoU
+2. グリッド化F1-Score
+3. レイヤー別IoU（空間+時間）
 """
 
 import numpy as np
@@ -19,7 +19,7 @@ import os
 
 
 class Evaluator:
-    """交通拥堵预测评估器"""
+    """交通拥挤予測評価器"""
 
     def __init__(
         self,
@@ -28,12 +28,12 @@ class Evaluator:
         time_step_minutes: int = 60
     ):
         """
-        初始化评估器
+        評価器を初期化
 
         Args:
-            road_type: 道路类型 (如 "関越道")
-            direction: 方向 ("上" 或 "下")
-            time_step_minutes: 时间栅格大小（分钟），默认 60 表示 1小时
+            road_type: 道路タイプ (例 "関越道")
+            direction: 方向 ("上" または "下")
+            time_step_minutes: 時間グリッドサイズ（分）、デフォルト60は1時間を示す
         """
         self.road_type = road_type
         self.direction = direction
@@ -41,7 +41,7 @@ class Evaluator:
 
         # KP区間を読み込む
         self.kp_intervals = self._load_kp_intervals()
-        print(f"✓ 已加载 {len(self.kp_intervals)} 个KP区间")
+        print(f"✓ {len(self.kp_intervals)} 個のKP区間を読み込み済み")
 
     def _load_kp_intervals(self) -> List[Tuple[float, float]]:
         """
@@ -62,7 +62,7 @@ class Evaluator:
         }
 
         if self.road_type not in road_file_map:
-            print(f"⚠️ 未识别的道路类型 '{self.road_type}'，使用関越道")
+            print(f"⚠️ 認識できない道路タイプ '{self.road_type}'、関越道を使用")
             road_file = road_file_map['関越道']
         else:
             road_file = road_file_map[self.road_type]
@@ -75,7 +75,7 @@ class Evaluator:
                 break
 
         if csv_file is None:
-            print(f"❌ 道路信息文件不存在: {road_file} (searched {candidate_dirs})")
+            print(f"❌ 道路情報ファイルが存在しません: {road_file} (検索 {candidate_dirs})")
             return []
 
         try:
@@ -98,7 +98,7 @@ class Evaluator:
             return kp_intervals
 
         except Exception as e:
-            print(f"❌ 加载道路信息失败: {e}")
+            print(f"❌ 道路情報の読み込みに失敗: {e}")
             import traceback
             traceback.print_exc()
             return []
@@ -109,25 +109,25 @@ class Evaluator:
         ground_truth: Dict[str, List[Dict]]
     ) -> Dict[str, Any]:
         """
-        评估所有方向的预测结果
+        全方向の予測結果を評価
 
         Args:
-            predictions: 预测热点字典 {"上": [...], "下": [...]}
-            ground_truth: 真实拥堵字典 {"上": [...], "下": [...]}
+            predictions: 予測ホットスポット辞書 {"上": [...], "下": [...]}
+            ground_truth: 実交通拥挤辞書 {"上": [...], "下": [...]}
 
         Returns:
-            评估结果字典，包含每个方向和平均指标
+            評価結果辞書、各方向と平均指標を含む
         """
         results = {}
 
-        # 评估每个方向
+        # 各方向を評価
         for direction in predictions.keys():
             if direction not in ground_truth:
-                print(f"⚠️ 警告：真实数据中没有'{direction}'方向的数据")
+                print(f"⚠️ 警告：実データに'{direction}'方向のデータがありません")
                 continue
 
             print(f"\n{'='*50}")
-            print(f"评估方向: {direction}")
+            print(f"評価方向: {direction}")
             print(f"{'='*50}")
 
             results[direction] = self.evaluate_single_direction(
@@ -149,22 +149,22 @@ class Evaluator:
         direction: str
     ) -> Dict[str, Any]:
         """
-        评估单个方向的预测结果
+        単一方向の予測結果を評価
 
         Args:
-            pred_hotspots: 预测的热点列表
-            gt_triangles: 真实的拥堵三角形列表
-            direction: 方向标识
+            pred_hotspots: 予測ホットスポットリスト
+            gt_triangles: 実交通拥挤三角形リスト
+            direction: 方向識別子
 
         Returns:
-            包含三种指标的评估结果
+            3種類の指標を含む評価結果
         """
         # Shapelyポリゴンに変換
         pred_polygons = self._convert_to_polygons(pred_hotspots, "predictions")
         gt_polygons = self._convert_to_polygons(gt_triangles, "ground_truth")
 
         if not pred_polygons or not gt_polygons:
-            print(f"⚠️ 警告：预测或真实数据为空，跳过评估")
+            print(f"⚠️ 警告：予測または実データが空、評価をスキップ")
             return {
                 "polygon_iou": 0.0,
                 "grid_metrics": {"precision": 0.0, "recall": 0.0, "f1_score": 0.0, "grid_iou": 0.0},
@@ -208,20 +208,20 @@ class Evaluator:
         data_type: str
     ) -> List[Polygon]:
         """
-        将数据转换为Shapely Polygon对象
+        データをShapely Polygonオブジェクトに変換
 
         Args:
-            data: 数据列表（预测热点或真实三角形）
-            data_type: "predictions" 或 "ground_truth"
+            data: データリスト（予測ホットスポットまたは実三角形）
+            data_type: "predictions" または "ground_truth"
 
         Returns:
-            Polygon对象列表
+            Polygonオブジェクトリスト
         """
         polygons = []
 
         for i, item in enumerate(data):
             try:
-                # 提取顶点坐标
+                # 頂点座標を抽出
                 if data_type == "predictions":
                     # 予測ホットスポット形式：{"vertices": [[kp, time], ...]}
                     if "prediction_shape" in item:
@@ -229,7 +229,7 @@ class Evaluator:
                     elif "vertices" in item:
                         vertices = item["vertices"]
                     else:
-                        print(f"⚠️ 预测数据{i}缺少vertices字段")
+                        print(f"⚠️ 予測データ{i}にverticesフィールドが不足")
                         continue
                 else:
                     # 実データ形式：{"vertices": [...]} または他のフィールドから構築が必要
@@ -239,23 +239,23 @@ class Evaluator:
                         # kp_start, kp_end, time等のフィールドから構築を試みる
                         vertices = self._construct_vertices_from_bounds(item)
                         if not vertices:
-                            print(f"⚠️ 真实数据{i}无法构造vertices")
+                            print(f"⚠️ 実データ{i}からverticesを構成できません")
                             continue
 
-                # 确保顶点格式正确
+                # 頂点フォーマットが正しいことを確認
                 if len(vertices) < 3:
-                    print(f"⚠️ 数据{i}顶点数不足3个: {len(vertices)}")
+                    print(f"⚠️ データ{i}の頂点数が3つ不足: {len(vertices)}")
                     continue
 
                 # Polygonを作成（頂点がタプルリストであることを確認）
                 coords = [(float(v[0]), float(v[1])) for v in vertices]
                 poly = Polygon(coords)
 
-                # 验证多边形有效性
+                # ポリゴンの有効性を検証
                 if not poly.is_valid:
-                    poly = poly.buffer(0)  # 尝试修复
+                    poly = poly.buffer(0)  # 修正を試行
                     if not poly.is_valid:
-                        print(f"⚠️ 数据{i}生成的多边形无效")
+                        print(f"⚠️ データ{i}から生成したポリゴンが無効")
                         continue
 
                 if poly.area > 0:
@@ -264,10 +264,10 @@ class Evaluator:
                     print(f"⚠️ 数据{i}多边形面积为0")
 
             except Exception as e:
-                print(f"⚠️ 处理数据{i}时出错: {e}")
+                print(f"⚠️ データ{i}の処理中にエラーが発生: {e}")
                 continue
 
-        print(f"✓ 成功转换{len(polygons)}个多边形 (来自{len(data)}个输入)")
+        print(f"✓ 正常に変換{len(polygons)}個のポリゴン (来自{len(data)}个输入)")
         return polygons
 
     def _construct_vertices_from_bounds(self, item: Dict) -> List[List[float]]:
@@ -311,7 +311,7 @@ class Evaluator:
         IoU = Area(Pred ∩ GT) / Area(Pred ∪ GT)
         """
         try:
-            # 合并所有预测多边形
+            # すべての予測ポリゴンをマージ
             pred_union = unary_union(pred_polygons)
 
             # 合并所有真实多边形
@@ -622,7 +622,7 @@ class Evaluator:
         total_length = sum(end - start for start, end in merged)
         return total_length
 
-    # ========== 辅助函数 ==========
+    # ========== ヘルパー関数 ==========
 
     def _calculate_average_metrics(self, results: Dict[str, Dict]) -> Dict[str, Any]:
         """计算所有方向的平均指标"""
@@ -659,14 +659,14 @@ class Evaluator:
         print(f"\n【指标1】全局多边形IoU: {polygon_iou:.4f}")
         if hasattr(self, '_polygon_details'):
             d = self._polygon_details
-            print(f"  - 预测区域总面积: {d['pred_area']:.2f} km·min")
+            print(f"  - 予測領域の総面積: {d['pred_area']:.2f} km·min")
             print(f"  - 真实区域总面积: {d['gt_area']:.2f} km·min")
             print(f"  - 交集面积: {d['intersection_area']:.2f} km·min")
             print(f"  - 并集面积: {d['union_area']:.2f} km·min")
 
         print(f"\n【指标2】栅格化评估 (KP区间: {len(self.kp_intervals)}个 × 时间: {self.time_step}min)")
-        print(f"  - Precision: {grid_metrics['precision']:.4f} (预测的{grid_metrics['precision']*100:.1f}%是正确的)")
-        print(f"  - Recall: {grid_metrics['recall']:.4f} (真实拥堵的{grid_metrics['recall']*100:.1f}%被预测到)")
+        print(f"  - Precision: {grid_metrics['precision']:.4f} (予測の{grid_metrics['precision']*100:.1f}%が正しい)")
+        print(f"  - Recall: {grid_metrics['recall']:.4f} (実際の拥堵の{grid_metrics['recall']*100:.1f}%予測された)")
         print(f"  - F1-Score: {grid_metrics['f1_score']:.4f}")
         print(f"  - Grid IoU: {grid_metrics['grid_iou']:.4f}")
 

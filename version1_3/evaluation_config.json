@@ -1,0 +1,30 @@
+{
+  "description": "批量评估配置文件 - 定义多个评估任务",
+  "tasks": [
+    {
+      "task_id": "kannetsu_2025_05_04_down",
+      "route": "関越道",
+      "direction": "下",
+      "target_date": "2025-05-04",
+      "train_years": [2014, 2018, 2024],
+      "ground_truth_file": "../data/processed_data/関越道_下_2025_05-04.csv",
+      "description": "関越道下行 2025年5月4日预测评估"
+    },
+    {
+      "task_id": "kannetsu_2025_05_04_up",
+      "route": "関越道",
+      "direction": "上",
+      "target_date": "2025-05-04",
+      "train_years": [2014, 2018, 2024],
+      "ground_truth_file": "../data/processed_data/関越道_上_2025_05-04.csv",
+      "description": "関越道上行 2025年5月4日预测评估"
+    }
+  ],
+  "evaluation_settings": {
+    "grid_resolution": {
+      "kp_step_km": 1.0,
+      "time_step_minutes": 60
+    },
+    "output_directory": "output/evaluation"
+  }
+}

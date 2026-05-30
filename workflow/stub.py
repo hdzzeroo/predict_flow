@@ -90,7 +90,7 @@ def CustomAgent(
     expected_implementations = {
         "chatbot",
         "visualization",
-        "analyze_with_llm",  # 替代cluster和draw_hulls
+        "analyze_with_llm",  # clusterとdraw_hullsの代替
         "report",
     }
 
@@ -115,6 +115,6 @@ def CustomAgent(
     builder.add_edge(START, "chatbot")
     builder.add_edge("report", END)
     builder.add_edge("chatbot", "visualization")
-    builder.add_edge("visualization", "analyze_with_llm")  # 替代cluster和draw_hulls
+    builder.add_edge("visualization", "analyze_with_llm")  # clusterとdraw_hullsの代替
     builder.add_edge("analyze_with_llm", "report")
     return builder

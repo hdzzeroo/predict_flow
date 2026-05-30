@@ -19,103 +19,103 @@ from functions import process_direction_aware_traffic_data
 
 def auto_detect_ground_truth_file(state: dict) -> dict:
     """
-    根据chatbot节点提取的信息自动检测ground truth文件（支持双向）
+    chatbotノードから抽出された情報に基づいてground truthファイルを自動検出（双方向サポート）
 
-    重要逻辑：
-    - 使用历史数据（如2014, 2019, 2024）训练/学习模式
-    - 预测目标年份（如2025）的拥堵情况
-    - Ground Truth应该是预测目标年份的真实数据
+    重要ロジック:
+    - 履歴データ（2014, 2019, 2024など）を使用してパターン学習
+    - 予測対象年（2025など）の交通拥挤状況を予測
+    - Ground Truthは予測対象年の実データであるべき
 
-    例如：用户输入"2025/5/4関越"
-      -> 训练数据: 2014, 2019, 2024年的5月4日
-      -> 预测目标: 2025年5月4日
-      -> Ground Truth: 2025年5月4日的真实数据
+    例：ユーザーが"2025/5/4関越"と入力
+      -> 学習データ: 2014, 2019, 2024年5月4日
+      -> 予測対象: 2025年5月4日
+      -> Ground Truth: 2025年5月4日の実データ
 
     Args:
-        state: workflow state包含route, target_year, target_month, target_day, direction_data
+        state: workflow stateにはroute, target_year, target_month, target_day, direction_dataが含まれる
 
     Returns:
-        dict: {"上": file_path, "下": file_path} 或 {} 如果检测失败
+        dict: {"上": file_path, "下": file_path} または {}（検出失敗時）
     """
-    # 提取必要信息
+    # 必要情報を抽出
     route = state.get('route', '')
-    target_year = state.get('target_year')  # 这是预测目标年份（如2025）
+    target_year = state.get('target_year')  # これは予測対象年（2025など）
     month = state.get('target_month')
     day = state.get('target_day')
 
-    # 检查基本信息
+    # 基本情報をチェック
     if not all([route, target_year, month, day]):
-        print(f"⚠️  无法自动检测ground truth: 缺少必要信息")
+        print(f"⚠️  ground truthを自動検出できません: 必要な情報が不足")
         print(f"   Route: {route}, Year: {target_year}, Month: {month}, Day: {day}")
         return {}
 
-    # 检查是否有多方向数据
+    # 多方向データがあるかチェック
     direction_data = state.get('direction_data', {})
 
-    # 如果没有direction_data，尝试使用单一direction
+    # direction_dataがない場合、単一directionを試す
     if not direction_data:
         single_direction = state.get('direction', '')
         if single_direction:
             direction_data = {single_direction: {}}
         else:
-            print(f"⚠️  无法检测方向信息")
+            print(f"⚠️  方向情報を検出できません")
             return {}
 
-    # 构造完整路径
+    # 完全パスを構築
     base_dir = "/home/dizhihuang/graduate/predict_workflow/data/processed_data"
     detected_files = {}
 
-    print(f"   检测到 {len(direction_data)} 个方向: {list(direction_data.keys())}")
-    print(f"   🎯 预测目标年份: {target_year} (将使用该年份的真实数据作为Ground Truth)")
+    print(f"   {len(direction_data)} 方向を検出: {list(direction_data.keys())}")
+    print(f"   🎯 予測対象年: {target_year}（該年の実データをGround Truthとして使用）")
 
-    # 为每个方向检测ground truth文件
+    # 各方向のground truthファイルを検出
     for direction in direction_data.keys():
-        # 使用预测目标年份构造Ground Truth文件名
-        # 例如: 関越道_上_2025_05-04.csv
+        # 予測対象年を使用してGround Truthファイル名を構築
+        # 例: 関越道_上_2025_05-04.csv
         filename = f"{route}_{direction}_{target_year}_{month:02d}-{day:02d}.csv"
         full_path = os.path.join(base_dir, filename)
 
-        # 检查文件是否存在
+        # ファイルが存在するかチェック
         if os.path.exists(full_path):
             detected_files[direction] = full_path
-            print(f"   ✅ [{direction}方向] 检测到: {filename}")
+            print(f"   ✅ [{direction}方向] 検出: {filename}")
         else:
-            print(f"   ℹ️  [{direction}方向] 未找到: {filename}")
+            print(f"   ℹ️  [{direction}方向] 未検出: {filename}")
 
     if detected_files:
-        print(f"✅ 成功检测到 {len(detected_files)} 个方向的ground truth文件")
+        print(f"✅ {len(detected_files)} 方向のground truthファイルを正常に検出")
     else:
-        print(f"❌ 未检测到任何ground truth文件")
+        print(f"❌ ground truthファイルが検出されませんでした")
 
     return detected_files
 
 
 def load_ground_truth(ground_truth_file: str, direction: str) -> dict:
     """
-    加载真实数据作为ground truth
+    実データをground truthとして読み込み
 
     Args:
-        ground_truth_file: 真实数据CSV文件路径
-        direction: 方向 ("上" 或 "下")
+        ground_truth_file: 実データCSVファイルパス
+        direction: 方向 ("上" または "下")
 
     Returns:
-        格式化的ground truth数据 {"上": [...], "下": [...]}
+        フォーマット済みground truthデータ {"上": [...], "下": [...]}
     """
     if not os.path.exists(ground_truth_file):
-        print(f"⚠️  Ground truth文件不存在: {ground_truth_file}")
+        print(f"⚠️  Ground truthファイルが存在しません: {ground_truth_file}")
         return {}
 
-    print(f"\n📂 加载Ground Truth数据: {ground_truth_file}")
+    print(f"\n📂 Ground Truthデータを読み込み: {ground_truth_file}")
 
     try:
-        # 使用现有函数处理真实数据
+        # 既存の関数を使用して実データを処理
         triangles_data, _ = process_direction_aware_traffic_data(
             file_path=ground_truth_file,
             direction=direction,
             output_dir="output/temp"
         )
 
-        # 转换为标准格式
+        # 標準フォーマットに変換
         triangles = []
         for t in triangles_data:
             vertices = t.get('vertices', [])
@@ -130,11 +130,11 @@ def load_ground_truth(ground_truth_file: str, direction: str) -> dict:
                     'area': t.get('area')
                 })
 
-        print(f"✓ Ground Truth加载完成: {len(triangles)} 个拥堵事件")
+        print(f"✓ Ground Truth読み込み完了: {len(triangles)} 件の交通拥挤イベント")
         return {direction: triangles}
 
     except Exception as e:
-        print(f"❌ 加载Ground Truth失败: {e}")
+        print(f"❌ Ground Truthの読み込みに失敗: {e}")
         import traceback
         traceback.print_exc()
         return {}
@@ -142,16 +142,16 @@ def load_ground_truth(ground_truth_file: str, direction: str) -> dict:
 
 def run_evaluation(predictions: dict, ground_truth: dict, route: str, direction: str):
     """
-    运行评估
+    評価を実行
 
     Args:
-        predictions: 预测结果 {"上": [...], "下": [...]}
-        ground_truth: 真实数据 {"上": [...], "下": [...]}
-        route: 道路名称
+        predictions: 予測結果 {"上": [...], "下": [...]}
+        ground_truth: 実データ {"上": [...], "下": [...]}
+        route: 道路名
         direction: 方向
     """
     print("\n" + "="*70)
-    print("📊 开始评估预测结果")
+    print("📊 予測結果の評価を開始")
     print("="*70)
 
     # 转换预测数据格式
@@ -192,8 +192,8 @@ def test_complete_workflow(user_input: str, ground_truth_file: str = None):
     Test the complete workflow with optional evaluation
 
     Args:
-        user_input: 用户输入查询
-        ground_truth_file: 可选的ground truth文件路径，用于评估
+        user_input: ユーザー入力クエリ
+        ground_truth_file: オプションのground truthファイルパス（評価用）
     """
     print("🚀 Starting complete workflow test")
     print("=" * 80)
@@ -256,20 +256,20 @@ def test_complete_workflow(user_input: str, ground_truth_file: str = None):
             return False
 
         # ===============================
-        # 自动检测ground truth文件（在Visualization之后，因为需要direction_data）
+        # ground truthファイルの自動検出（Visualizationの後、direction_dataが必要）
         # ===============================
         if ground_truth_file is None:
-            print("\n🔍 自动检测ground truth文件...")
+            print("\n🔍 ground truthファイルを自動検出...")
             print("-" * 40)
             auto_gt_file = auto_detect_ground_truth_file(state)
             if auto_gt_file:
                 ground_truth_file = auto_gt_file
-                print(f"   将使用检测到的文件进行评估")
+                print(f"   検出したファイルを使用して評価を実行")
             else:
-                print(f"   未检测到ground truth文件，将跳过评估")
+                print(f"   ground truthファイルが検出されず、評価をスキップ")
 
         # ===============================
-        # Step 3: Analyze with LLM node (替代cluster和draw_hulls)
+        # Step 3: Analyze with LLM node (clusterとdraw_hullsの代替)
         # ===============================
         print("\n3️⃣ Analyze with LLM node - LLM-based hotspot analysis")
         print("-" * 40)
@@ -363,11 +363,11 @@ def test_complete_workflow(user_input: str, ground_truth_file: str = None):
         if ground_truth_file:
             route = state.get('route', '関越道')
 
-            # 判断是dict（多方向）还是str（单方向）
+            # dict（多方向）かstr（単方向）かを判断
             if isinstance(ground_truth_file, dict):
-                # 多方向评估
+                # 多方向評価
                 print("\n" + "="*70)
-                print("📊 开始多方向评估")
+                print("📊 多方向評価を開始")
                 print("="*70)
 
                 all_eval_results = {}
@@ -392,39 +392,39 @@ def test_complete_workflow(user_input: str, ground_truth_file: str = None):
                     else:
                         print(f"   ⚠️  [{direction}] 无法评估：数据为空")
 
-                # 显示所有方向的评估摘要
+                # 全方向の評価サマリーを表示
                 if all_eval_results:
                     print("\n" + "="*70)
-                    print("📈 多方向评估汇总")
+                    print("📈 多方向評価サマリー")
                     print("="*70)
 
                     for direction, eval_results in all_eval_results.items():
                         print(f"\n{'='*70}")
-                        print(f"🔹 [{direction}] 方向评估结果")
+                        print(f"🔹 [{direction}] 方向の評価結果")
                         print(f"{'='*70}")
 
                         for dir_key, metrics in eval_results.items():
                             if dir_key == "average":
-                                print(f"\n【整体平均】")
+                                print(f"\n【全体平均】")
                             else:
                                 print(f"\n【{dir_key}行】")
 
-                            print(f"  多边形IoU:      {metrics['polygon_iou']:.4f}")
+                            print(f"  ポリゴンIoU:      {metrics['polygon_iou']:.4f}")
                             print(f"  F1-Score:       {metrics['grid_metrics']['f1_score']:.4f}")
                             print(f"  Precision:      {metrics['grid_metrics']['precision']:.4f}")
                             print(f"  Recall:         {metrics['grid_metrics']['recall']:.4f}")
                 else:
-                    print("\n⚠️  所有方向评估失败")
+                    print("\n⚠️  全方向の評価に失敗")
 
             else:
-                # 单方向评估（兼容旧逻辑）
+                # 単方向評価（旧ロジックとの互換性）
                 direction = state.get('direction', '下')
 
-                # 加载ground truth
+                # ground truthを読み込み
                 ground_truth = load_ground_truth(ground_truth_file, direction)
 
                 if ground_truth and llm_analysis:
-                    # 运行评估
+                    # 評価を実行
                     eval_results = run_evaluation(
                         predictions=llm_analysis,
                         ground_truth=ground_truth,
@@ -432,26 +432,26 @@ def test_complete_workflow(user_input: str, ground_truth_file: str = None):
                         direction=direction
                     )
 
-                    # 显示评估摘要
+                    # 評価サマリーを表示
                     print("\n" + "="*70)
                     print("📈 Evaluation Summary")
                     print("="*70)
 
                     for dir_key, metrics in eval_results.items():
                         if dir_key == "average":
-                            print(f"\n【整体平均】")
+                            print(f"\n【全体平均】")
                         else:
                             print(f"\n【{dir_key}行】")
 
-                        print(f"  多边形IoU:      {metrics['polygon_iou']:.4f}")
+                        print(f"  ポリゴンIoU:      {metrics['polygon_iou']:.4f}")
                         print(f"  F1-Score:       {metrics['grid_metrics']['f1_score']:.4f}")
                         print(f"  Precision:      {metrics['grid_metrics']['precision']:.4f}")
                         print(f"  Recall:         {metrics['grid_metrics']['recall']:.4f}")
                 else:
-                    print("\n⚠️  无法进行评估：Ground truth或预测结果为空")
+                    print("\n⚠️  評価を実行できません：Ground truthまたは予測結果が空です")
         else:
-            print("\n💡 未提供Ground Truth文件，跳过评估")
-            print("   提示：程序会自动检测ground truth文件")
+            print("\n💡 Ground Truthファイルが提供されず、評価をスキップ")
+            print("   ヒント：プログラムはground truthファイルを自動検出します")
 
         return True
 
@@ -463,21 +463,21 @@ def test_complete_workflow(user_input: str, ground_truth_file: str = None):
 
 
 def save_workflow_state(state, user_input):
-    """Save workflow state to file (包含完整的三角形数据和LLM分析结果)"""
+    """Save workflow state to file (完全な三角形のデータとLLM分析結果を含む)"""
     try:
-        # Create output directory
+        # 出力ディレクトリを作成
         os.makedirs("output", exist_ok=True)
 
-        # Prepare state for saving (exclude non-serializable content)
+        # 保存用の状態を準備（シリアライズ不可能なコンテンツを除外）
         save_state = {}
         for key, value in state.items():
             if key == 'triangles':
-                # 🔥 保存所有三角形的完整信息（不再限制为前10个）
+                # 🔥 完全な三角形の情報を保存（最初の10個に制限しない）
                 save_state[key] = [
                     {
                         'id': t.get('id'),
                         'shape_type': t.get('shape_type', 'triangle'),
-                        'vertices': t.get('vertices', []),  # 包含完整顶点坐标
+                        'vertices': t.get('vertices', []),  # 完全な頂点座標を含む
                         'center': t.get('center'),
                         'area': t.get('area'),
                         'width': t.get('width'),
@@ -490,10 +490,10 @@ def save_workflow_state(state, user_input):
                         'time_peak': t.get('time_peak'),
                         'source_file': t.get('source_file', 'unknown')
                     }
-                    for t in value  # 保存所有三角形，不再截断
+                    for t in value  # 全三角形を保存、切り詰めなし
                 ]
             elif key == 'direction_data':
-                # 🔥 保存按方向分组的完整数据
+                # 🔥 方向ごとにグループ化された完全データを保存
                 save_state[key] = {}
                 for direction, data in value.items():
                     save_state[key][direction] = {
@@ -517,8 +517,8 @@ def save_workflow_state(state, user_input):
                         'triangle_count': len(data.get('triangles', []))
                     }
             elif key == 'llm_analysis':
-                # 🔥 保存LLM分析结果
-                save_state[key] = value  # LLM分析结果已经是可序列化的dict
+                # 🔥 LLM分析結果を保存
+                save_state[key] = value  # LLM分析結果はすでにシリアライズ可能なdict
             elif key == 'hulls':
                 # Save convex hull triangle information
                 save_state[key] = [
@@ -533,7 +533,7 @@ def save_workflow_state(state, user_input):
             elif isinstance(value, (str, int, float, bool, list)) and key != 'cluster_analysis':
                 save_state[key] = value
 
-        # Add metadata
+        # メタデータを追加
         llm_analysis = state.get('llm_analysis', {})
         total_hotspots = sum(len(analysis.get('hotspots', [])) for analysis in llm_analysis.values())
 
@@ -544,8 +544,8 @@ def save_workflow_state(state, user_input):
             'total_triangles': len(state.get('triangles', [])),
             'total_clusters': len(state.get('clusters', [])),
             'total_hulls': len(state.get('hulls', [])),
-            'total_hotspots': total_hotspots,  # 新增：LLM识别的热点总数
-            'directions_analyzed': list(state.get('direction_data', {}).keys())  # 新增：分析的方向
+            'total_hotspots': total_hotspots,  # 新規：LLMが識別したホットスポット総数
+            'directions_analyzed': list(state.get('direction_data', {}).keys())  # 新規：分析した方向
         }
 
         # Save to JSON file
@@ -690,7 +690,7 @@ def main():
         if not os.path.exists(args.gt):
             print(f"   ⚠️  Warning: Ground truth file does not exist!")
     else:
-        print(f"   Ground Truth: 将自动检测 (基于解析的日期和道路信息)")
+        print(f"   Ground Truth: 自動検出（解析された日付と道路情報に基づく）")
 
     print("")
 

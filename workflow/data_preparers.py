@@ -1,6 +1,6 @@
 """
-数据准备模块
-负责将原始数据转换为LLM可以理解的格式
+データ準備モジュール
+生データをLLMが理解できるフォーマットに変換
 """
 
 from typing import Dict, List, Any, Optional
@@ -8,31 +8,31 @@ import pandas as pd
 
 
 class DataPreparer:
-    """数据准备器基类"""
+    """データ準備クラス（基底クラス）"""
 
     @staticmethod
     def clean_vertices(vertices: List[List[float]]) -> List[List[float]]:
         """
-        清理顶点数据，去除重复的连续顶点
+        頂点データをクリーン化し、重複した連続頂点を削除
 
         Args:
-            vertices: 顶点列表，每个顶点是 [kp, time]
+            vertices: 頂点リスト、各頂点は [kp, time]
 
         Returns:
-            清理后的顶点列表
+            クリーン化後の頂点リスト
         """
         if not vertices or len(vertices) < 2:
             return vertices
 
         cleaned = []
         for vertex in vertices:
-            # 检查是否与上一个顶点重复（考虑浮点数精度）
+            # 前の頂点と重複しているかチェック（浮動小数点精度を考慮）
             if not cleaned or \
                abs(vertex[0] - cleaned[-1][0]) > 0.01 or \
                abs(vertex[1] - cleaned[-1][1]) > 0.01:
                 cleaned.append(vertex)
 
-        # 检查首尾是否重复（闭合多边形的情况）
+        # 先頭と末尾が重複しているかチェック（閉じポリゴンの場合）
         if len(cleaned) > 2:
             if abs(cleaned[0][0] - cleaned[-1][0]) < 0.01 and \
                abs(cleaned[0][1] - cleaned[-1][1]) < 0.01:
@@ -43,17 +43,17 @@ class DataPreparer:
     @staticmethod
     def normalize_triangle_shapes(triangles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        规范化三角形/四边形数据：
-        - 去除重复顶点
-        - 根据实际顶点数量更新 shape_type
-        - 三角形必须有3个不同的点
-        - 四边形必须有4个不同的点
+        三角形/四辺形データを正規化：
+        - 重複頂点を削除
+        - 実際の頂点数量に基づいて shape_type を更新
+        - 三角形は3つの異なる点が必要
+        - 四辺形は4つの異なる点が必要
 
         Args:
-            triangles: 原始三角形数据列表
+            triangles: 生三角形データリスト
 
         Returns:
-            规范化后的三角形数据列表
+            正規化後の三角形データリスト
         """
         if not triangles:
             return []
@@ -69,7 +69,7 @@ class DataPreparer:
         }
 
         for triangle in triangles:
-            # 复制原始数据
+            # 生データをコピー
             normalized_triangle = triangle.copy()
 
             # 元の shape_type を取得
@@ -79,20 +79,20 @@ class DataPreparer:
             else:
                 stats['original_quads'] += 1
 
-            # 获取顶点数据
+            # 頂点データを取得
             vertices = triangle.get('vertices', [])
             if not vertices:
                 # verticesフィールドがない場合、クリーン化をスキップ
                 normalized.append(normalized_triangle)
                 continue
 
-            # 清理重复顶点
+            # 重複頂点をクリーン化
             cleaned_vertices = DataPreparer.clean_vertices(vertices)
             vertex_count = len(cleaned_vertices)
 
-            # 根据清理后的顶点数量判断形状类型
+            # クリーン化後の頂点数量に基づいて形状タイプを判断
             if vertex_count < 3:
-                # 无效形状（少于3个顶点）
+                # 無効な形状（3頂点未満）
                 print(f"⚠️ Warning: Triangle {triangle.get('id', '?')} has only {vertex_count} vertices after cleaning, skipping")
                 stats['invalid_shapes'] += 1
                 continue
@@ -106,12 +106,12 @@ class DataPreparer:
                     stats['degraded_to_triangle'] += 1
 
             elif vertex_count == 4:
-                # 四边形
+                # 四辺形
                 normalized_triangle['vertices'] = cleaned_vertices
                 normalized_triangle['shape_type'] = 'quadrilateral'
                 stats['cleaned_quads'] += 1
             else:
-                # 顶点数>4，保持原样但给出警告
+                # 頂点数>4、そのまま使用して警告を表示
                 print(f"⚠️ Warning: Triangle {triangle.get('id', '?')} has {vertex_count} vertices (>4)")
                 normalized_triangle['vertices'] = cleaned_vertices
                 normalized.append(normalized_triangle)
@@ -119,7 +119,7 @@ class DataPreparer:
 
             normalized.append(normalized_triangle)
 
-        # 打印清理统计
+        # クリーン化統計を出力
         print(f"\n📊 Shape normalization statistics:")
         print(f"  Original: {stats['original_triangles']} triangles, {stats['original_quads']} quadrilaterals")
         print(f"  Cleaned: {stats['cleaned_triangles']} triangles, {stats['cleaned_quads']} quadrilaterals")
@@ -133,13 +133,13 @@ class DataPreparer:
     @staticmethod
     def prepare_triangle_data(triangles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        准备三角形数据，标准化格式并添加ID
+        三角形データを準備し、フォーマットを標準化してIDを追加
 
         Args:
-            triangles: 原始三角形数据列表
+            triangles: 生三角形データリスト
 
         Returns:
-            标准化后的三角形数据
+            標準化後の三角形データ
         """
         if not triangles:
             return []
@@ -161,13 +161,13 @@ class DataPreparer:
     @staticmethod
     def calculate_data_statistics(triangles: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
-        计算数据统计信息
+        データ統計情報を計算
 
         Args:
-            triangles: 三角形数据列表
+            triangles: 三角形データリスト
 
         Returns:
-            统计信息字典
+            統計情報辞書
         """
         if not triangles:
             return {
@@ -194,7 +194,7 @@ class DataPreparer:
                 t.get('peak_time', 0)
             ])
 
-        # 过滤无效值
+        # 無効値をフィルタ
         kp_values = [v for v in kp_values if v is not None and v > 0]
         time_values = [v for v in time_values if v is not None and v >= 0]
 
@@ -225,15 +225,15 @@ class DataPreparer:
         csv_files: List[str]
     ) -> Dict[str, Any]:
         """
-        准备完整的LLM输入数据
+        完全なLLM入力データを準備
 
         Args:
-            triangles: 三角形数据
+            triangles: 三角形データ
             direction: 方向
-            csv_files: CSV文件列表
+            csv_files: CSVファイルリスト
 
         Returns:
-            完整的LLM输入数据字典
+            完全なLLM入力データ辞書
         """
         prepared_triangles = DataPreparer.prepare_triangle_data(triangles)
         statistics = DataPreparer.calculate_data_statistics(triangles)
@@ -247,18 +247,18 @@ class DataPreparer:
 
 
 class RawDataLoader:
-    """原始数据加载器"""
+    """生データローダー"""
 
     @staticmethod
     def load_csv_summary(csv_path: str) -> Optional[Dict[str, Any]]:
         """
-        加载CSV文件并生成摘要信息
+        CSVファイルを読み込んでサマリー情報を生成
 
         Args:
-            csv_path: CSV文件路径
+            csv_path: CSVファイルパス
 
         Returns:
-            CSV数据摘要，如果加载失败返回None
+            CSVデータサマリー（読み込み失敗時はNoneを返す）
         """
         try:
             df = pd.read_csv(csv_path)
@@ -271,7 +271,7 @@ class RawDataLoader:
                 "kp_range": None
             }
 
-            # 尝试提取日期范围
+            # 日付範囲を抽出を試みる
             date_columns = [col for col in df.columns if 'date' in col.lower() or '日付' in col]
             if date_columns:
                 try:
@@ -304,13 +304,13 @@ class RawDataLoader:
     @staticmethod
     def load_multiple_csv_summaries(csv_paths: List[str]) -> List[Dict[str, Any]]:
         """
-        加载多个CSV文件的摘要信息
+        複数のCSVファイルのサマリー情報を読み込み
 
         Args:
-            csv_paths: CSV文件路径列表
+            csv_paths: CSVファイルパスリスト
 
         Returns:
-            CSV摘要信息列表
+            CSVサマリー情報リスト
         """
         summaries = []
         for path in csv_paths:
@@ -321,23 +321,23 @@ class RawDataLoader:
 
 
 class OutputFormatter:
-    """输出格式化器"""
+    """出力フォーマッター"""
 
     @staticmethod
     def format_hotspot_for_display(hotspot: Dict[str, Any]) -> str:
         """
-        格式化单个热点信息用于显示
+        単一ホットスポット情報を表示用にフォーマット
 
         Args:
-            hotspot: 热点数据字典
+            hotspot: ホットスポットデータ辞書
 
         Returns:
-            格式化的字符串
+            フォーマット済み文字列
         """
         kp_start, kp_end = hotspot['kp_range']
         time_start, time_end = hotspot['time_range']
 
-        # 转换时间为小时:分钟格式
+        # 時間を時:分フォーマットに変換
         start_hour, start_min = divmod(time_start, 60)
         end_hour, end_min = divmod(time_end, 60)
 
@@ -352,46 +352,46 @@ class OutputFormatter:
     @staticmethod
     def format_analysis_summary(analysis_result: Dict[str, Any]) -> str:
         """
-        格式化分析结果摘要
+        分析結果サマリーをフォーマット
 
         Args:
-            analysis_result: LLM分析结果
+            analysis_result: LLM分析結果
 
         Returns:
-            格式化的摘要字符串
+            フォーマット済みサマリー文字列
         """
         direction = analysis_result.get('direction', 'Unknown')
         hotspots = analysis_result.get('hotspots', [])
         summary = analysis_result.get('summary', {})
 
         lines = [
-            f"=== {direction}方向分析结果 ===",
-            f"识别到 {summary.get('total_hotspots', 0)} 个热点区域",
-            f"分析置信度: {summary.get('analysis_confidence', 0):.2f}"
+            f"=== {direction}方向分析結果 ===",
+            f"識別されたホットスポット数: {summary.get('total_hotspots', 0)} エリア",
+            f"分析信頼度: {summary.get('analysis_confidence', 0):.2f}"
         ]
 
         if hotspots:
-            lines.append("\n热点详情:")
+            lines.append("\nホットスポット詳細:")
             for hotspot in hotspots:
                 lines.append(f"  {OutputFormatter.format_hotspot_for_display(hotspot)}")
 
         return "\n".join(lines)
 
 
-# 便捷函数
+# 便利関数
 def prepare_direction_data(
     direction_data: Dict[str, Dict[str, Any]],
     file_paths: List[str]
 ) -> Dict[str, Dict[str, Any]]:
     """
-    为所有方向准备数据
+    全方向のデータを準備
 
     Args:
-        direction_data: 方向数据字典
-        file_paths: 文件路径列表
+        direction_data: 方向データ辞書
+        file_paths: ファイルパスリスト
 
     Returns:
-        准备好的数据字典
+        準備好的データ辞書
     """
     import os
 

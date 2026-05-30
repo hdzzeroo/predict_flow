@@ -1,0 +1,17 @@
+# OpenAI API 配置
+OPENAI_API_KEY=your-openai-api-key-here
+OPENAI_MODEL=gpt-3.5-turbo
+OPENAI_TEMPERATURE=0.1
+OPENAI_MAX_TOKENS=200
+OPENAI_TIMEOUT=10
+
+# 数据路径配置
+DATA_BASE_DIR=/home/dizhihuang/graduate/predict_workflow/data/processed_data
+
+# LLM 功能配置
+USE_REAL_LLM=true
+FALLBACK_ON_ERROR=true
+
+# 其他配置
+DEBUG=false
+LOG_LEVEL=INFO 

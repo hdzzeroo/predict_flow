@@ -1,0 +1,750 @@
+"""
+Prompt模板模块
+管理所有LLM分析相关的prompt模板
+"""
+
+import json
+from typing import Dict, List, Any
+from data_preparers import DataPreparer
+
+
+class PromptTemplates:
+    """Prompt模板管理类"""
+
+    @staticmethod
+    def get_system_prompt() -> str:
+        """获取系统prompt"""
+        return """你是资深交通拥堵预测专家，擅长基于历史数据分析预测未来拥堵区域。
+
+请使用结构化思维链方式分析数据：
+1. 先进行空间-时间聚类
+2. 分析每个聚类的几何边界
+3. 计算预测形状的顶点坐标
+4. 验证结果的合理性
+
+输出必须是严格的JSON格式，包含thinking字段记录你的推理过程。不要添加任何markdown标记。"""
+
+    @staticmethod
+    def get_hotspot_analysis_prompt(
+        direction: str,
+        csv_files: List[str],
+        triangle_count: int,
+        kp_range: List[float],
+        time_range: List[int],
+        triangles_data: List[Dict],
+        max_triangles_display: int = None,
+        has_more: bool = False
+    ) -> str:
+        """
+        获取热点分析的用户prompt（使用XML结构化+CoT设计）
+
+        Args:
+            direction: 方向（上/下）
+            csv_files: CSV文件列表
+            triangle_count: 三角形总数
+            kp_range: KP范围 [min, max]
+            time_range: 时间范围 [min, max]（分钟）
+            triangles_data: 三角形数据列表（混合格式：vertices + summary）
+            max_triangles_display: 实际显示的三角形数量
+            has_more: 是否还有更多三角形未显示
+
+        Returns:
+            格式化的prompt字符串
+        """
+
+        # 设置默认值
+        if max_triangles_display is None:
+            max_triangles_display = len(triangles_data)
+
+        # 转换时间范围为小时:分钟格式
+        time_start_hour, time_start_min = divmod(time_range[0], 60)
+        time_end_hour, time_end_min = divmod(time_range[1], 60)
+
+        # 计算预期热点数量
+        estimated_hotspots = max(3, int(triangle_count * 0.25))
+
+        prompt = f"""<task>
+分析过去三年同一日期的交通拥堵数据，预测今年同一日期可能发生拥堵的区域。
+</task>
+
+<context>
+  <data_source>
+    <direction>{direction}方向</direction>
+    <files>{', '.join(csv_files)}</files>
+    <event_count>{triangle_count}个历史拥堵事件</event_count>
+    <kp_range>{kp_range[0]:.1f} - {kp_range[1]:.1f} km</kp_range>
+    <time_range>{time_start_hour:02d}:{time_start_min:02d} - {time_end_hour:02d}:{time_end_min:02d}</time_range>
+  </data_source>
+
+  <data_characteristics>
+    <item>数据已筛选为"交通集中"原因（排除事故、施工等）</item>
+    <item>来自三年（2014、2018、2024）同一假期日期</item>
+    <item>每个拥堵事件表示为三角形或四边形</item>
+    <item>坐标系统：横轴=KP位置（km），纵轴=时间（一天中的分钟数）</item>
+  </data_characteristics>
+</context>
+
+<methodology>
+  <core_principle>
+    三年数据重叠的区域，今年更可能再次发生拥堵
+  </core_principle>
+
+  <clustering_parameters>
+    <spatial_threshold>7.0 km</spatial_threshold>
+    <temporal_threshold>180 minutes (3 hours)</temporal_threshold>
+    <min_cluster_size>2 events</min_cluster_size>
+    <priority>优先合并包含三年数据的事件组</priority>
+  </clustering_parameters>
+
+  <shape_decision_rules>
+    <triangle>
+      <condition>时间跨度 ≤ 120分钟（2小时）</condition>
+      <vertices>3个顶点（逆时针）</vertices>
+      <structure>必须有一条垂直边（底边，KP相同）</structure>
+    </triangle>
+    <trapezoid>
+      <condition>时间跨度 > 120分钟（2小时）</condition>
+      <vertices>4个顶点（逆时针）</vertices>
+      <structure>必须有两条垂直边（左右边，各自KP相同）</structure>
+    </trapezoid>
+    <forbidden>矩形（上下边水平）</forbidden>
+  </shape_decision_rules>
+
+  <severity_criteria>
+    <high>7个以上事件 或 三年数据全覆盖</high>
+    <medium>4-6个事件 或 两年数据覆盖</medium>
+    <low>2-3个事件 或 仅一年数据</low>
+  </severity_criteria>
+</methodology>
+
+<input_data>
+{json.dumps(triangles_data, ensure_ascii=False, indent=2)}
+</input_data>
+{"<note>还有" + str(triangle_count - max_triangles_display) + "个事件未显示</note>" if has_more else ""}
+
+<thinking_instructions>
+请按照以下4个步骤进行分析，并在输出的thinking字段中详细记录每一步的推理过程：
+
+<step_1_clustering>
+<objective>识别空间-时间聚集的事件组</objective>
+
+<method>
+1. 遍历所有三角形，计算两两之间的距离：
+   - 空间距离 = |center_kp_1 - center_kp_2|
+   - 时间距离 = |center_time_1 - center_time_2|
+
+2. 判断是否应该归为同一聚类：
+   - 空间距离 ≤ 7.0 km 且 时间距离 ≤ 180 分钟 → 可能属于同一聚类
+
+3. 优先级规则：
+   - 优先合并包含多个年份的事件（查看source_file字段）
+   - 三年都有的位置 → 必须识别为热点
+   - 两年有的位置 → 应该识别为热点
+   - 只有一年的孤立事件 → 可以忽略
+
+4. 最小聚类大小：每个聚类至少包含2个三角形
+
+<expected_output>
+在thinking.step1_clustering中输出：
+- 识别出的聚类列表：cluster_1, cluster_2, ...
+- 每个聚类包含的三角形ID：例如 [0, 3, 5]
+- 聚类理由：为什么这些三角形应该归为一组
+- 年份覆盖情况：每个聚类包含哪几年的数据
+
+例如：
+"识别出4个聚类。
+Cluster 1包含三角形[0,3,5,8]，KP范围30-35km，时间范围10:00-12:00，覆盖2014、2018、2024三年。
+Cluster 2包含三角形[1,6]，KP范围45-48km，时间范围15:00-16:30，覆盖2018、2024两年。
+..."
+</expected_output>
+</step_1_clustering>
+
+<step_2_boundary_analysis>
+<objective>分析每个聚类的几何边界，决定使用三角形还是梯形</objective>
+
+<method>
+对于每个聚类中的所有三角形：
+
+1. 识别"前端边界"（垂直底边的位置）：
+   - 三角形有3个顶点，其中2个顶点的KP值相同 → 这就是底边
+   - 四边形有4个顶点，找到左侧垂直边的两个顶点
+   - 提取所有底边的KP值，计算：front_kp_min = min(这些KP), front_kp_max = max(这些KP)
+
+2. 识别"后端边界"（顶点/峰值的位置）：
+   - 三角形的第3个顶点（KP值不同的那个）就是峰值点
+   - 四边形的右侧垂直边就是后端
+   - 提取所有峰值点的KP值，计算：back_kp_min = min(这些KP), back_kp_max = max(这些KP)
+
+3. 分析时间分布：
+   - 提取聚类中所有时间值
+   - 计算时间跨度 = max(所有时间) - min(所有时间)
+   - 分析前端和后端的时间分布是否一致
+
+4. 决策形状类型：
+   - 如果时间跨度 ≤ 120分钟 → 使用三角形
+   - 如果时间跨度 > 120分钟 → 使用梯形
+
+<expected_output>
+在thinking.step2_boundaries中输出JSON格式：
+{{
+  "cluster_1": {{
+    "front_kp_boundary": [30.0, 33.0],
+    "back_kp_boundary": [42.0, 48.0],
+    "time_span_minutes": 145,
+    "shape_decision": "trapezoid",
+    "reasoning": "时间跨度145分钟>120分钟，使用梯形"
+  }},
+  "cluster_2": {{
+    "front_kp_boundary": [45.0, 45.5],
+    "back_kp_boundary": [58.0, 60.0],
+    "time_span_minutes": 95,
+    "shape_decision": "triangle",
+    "reasoning": "时间跨度95分钟≤120分钟，使用三角形"
+  }}
+}}
+</expected_output>
+</step_2_boundary_analysis>
+
+<step_3_shape_construction>
+<objective>根据边界计算精确的vertices坐标</objective>
+
+<method>
+基于Step 2的边界分析，构造预测形状：
+
+【三角形构造】（3个顶点，逆时针顺序）：
+vertex1 = [front_kp_boundary的中点或最小值, 聚类中最早时间]  # 底边下端点
+vertex2 = [front_kp_boundary的中点或最小值, 聚类中最晚时间]  # 底边上端点（KP与vertex1相同）
+vertex3 = [back_kp_boundary的中点或最大值, 聚类峰值时间的平均值]  # 顶点
+
+验证：vertex1[0] == vertex2[0]（底边垂直）
+
+【梯形构造】（4个顶点，逆时针顺序）：
+vertex1 = [front_kp的最小值或中点, 前端最早时间]      # 左下角
+vertex2 = [back_kp的最大值或中点, 后端最早时间]       # 右下角（时间通常与vertex1不同）
+vertex3 = [back_kp的最大值或中点, 后端最晚时间]       # 右上角（KP与vertex2相同）
+vertex4 = [front_kp的最小值或中点, 前端最晚时间]      # 左上角（KP与vertex1相同，时间通常与vertex3不同）
+
+验证：
+- vertex1[0] == vertex4[0]（左边垂直）
+- vertex2[0] == vertex3[0]（右边垂直）
+- vertex1[1] != vertex2[1]（下边不水平）
+- vertex3[1] != vertex4[1]（上边不水平）
+
+<expected_output>
+在thinking.step3_construction中输出：
+"Cluster 1（梯形）：
+  前端KP=30.0, 后端KP=48.0
+  前端时间：600-745分钟，后端时间：590-750分钟
+  vertices: [[30.0, 600], [48.0, 590], [48.0, 750], [30.0, 745]]
+  验证：左边垂直✓，右边垂直✓，非矩形✓"
+</expected_output>
+</step_3_shape_construction>
+
+<step_4_validation>
+<objective>验证分析结果的合理性</objective>
+
+<checks>
+1. 数量检查：
+   - 预期热点数量：约 {estimated_hotspots} 个（输入三角形数 × 0.25）
+   - 实际识别数量：? 个
+   - 是否合理？如果差距过大，需要重新审视聚类
+
+2. 覆盖率检查：
+   - 总共{triangle_count}个输入三角形
+   - 被包含在热点中的三角形数：? 个
+   - 覆盖率应该 > 70%
+
+3. 几何有效性：
+   - 所有预测形状是否符合几何约束？
+   - 三角形有垂直边？梯形有两条垂直边？
+   - 是否避免了矩形（水平边）？
+
+4. 优先级检查：
+   - 三年数据都有的区域是否都识别了？
+   - 是否有孤立的单年事件被错误识别为热点？
+
+<expected_output>
+在thinking.step4_validation中输出：
+"验证结果：
+- 识别{estimated_hotspots}个热点（预期{estimated_hotspots}个）✓
+- 覆盖{triangle_count}个三角形中的X个（覆盖率Y%）✓
+- 所有形状符合几何约束 ✓
+- 三年覆盖的2个区域全部识别 ✓
+结论：分析结果合理"
+</expected_output>
+</checks>
+</step_4_validation>
+
+</thinking_instructions>
+
+<output_format>
+请严格按照以下JSON格式输出（不要添加markdown标记）：
+
+{{
+  "thinking": {{
+    "step1_clustering": "详细的聚类分析过程...",
+    "step2_boundaries": {{
+      "cluster_1": {{"front_kp_boundary": [30.0, 33.0], "back_kp_boundary": [42.0, 48.0], ...}},
+      ...
+    }},
+    "step3_construction": "详细的顶点计算过程...",
+    "step4_validation": "验证结果..."
+  }},
+  "direction": "{direction}",
+  "hotspots": [
+    {{
+      "hotspot_id": 1,
+      "kp_range": [30.0, 48.0],
+      "time_range": [590, 750],
+      "included_triangle_ids": [0, 3, 5, 8],
+      "frequency": 4,
+      "years_coverage": [2014, 2018, 2024],
+      "severity": "high",
+      "description": "早高峰KP30-48km区间拥堵",
+      "reasoning": "这4个三角形空间距离<7km，时间距离<3小时，三年数据全覆盖",
+      "prediction_shape": {{
+        "shape_type": "trapezoid",
+        "vertices": [[30.0, 600], [48.0, 590], [48.0, 750], [30.0, 745]]
+      }}
+    }}
+  ],
+  "summary": {{
+    "total_hotspots": 1,
+    "most_severe_hotspot_id": 1,
+    "analysis_confidence": 0.90,
+    "reasoning_summary": "基于三年数据识别出X个高概率拥堵区域"
+  }}
+}}
+</output_format>
+
+<important_guidelines>
+1. 预期热点数量：约 {estimated_hotspots} 个（可以是{max(2, estimated_hotspots-2)}-{estimated_hotspots+3}个）
+2. 不要过度合并：宁可多识别几个小热点，不要合并成少数大热点
+3. 三年数据都有 → 必须预测（severity: high）
+4. 两年数据有 → 应该预测（severity: medium）
+5. 只有一年且孤立 → 可以忽略
+6. 覆盖率目标：≥ 70%的输入三角形应该被包含在某个热点中
+</important_guidelines>"""
+        return prompt
+- **KP范围**: {kp_range[0]:.1f} - {kp_range[1]:.1f} km
+- **时间范围**: {time_start_hour:02d}:{time_start_min:02d} - {time_end_hour:02d}:{time_end_min:02d}
+
+### 数据特征
+1. **数据筛选**: 这些数据已经过筛选，**仅包含"交通集中"原因**的拥堵，排除了事故、施工等其他原因
+2. **时间对齐**: 数据来自过去三年（2014、2018、2024年）**同一假期日期**，排列相似度高
+3. **几何表示**: 每个拥堵事件被抽象为三角形或四边形：
+   - **三角形**: 拥堵从无到有，逐渐扩展再消散（典型的交通集中模式）
+   - **四边形**: 拥堵初始就有一定长度，持续演化
+4. **坐标系统**:
+   - **横坐标(KP)**: 公路里程桩号，表示拥堵发生的地理位置
+   - **纵坐标(time)**: 一天中的分钟数（0-1440），表示拥堵发生的时间
+
+### 🚗 拥堵三角形的物理原理（核心概念）
+
+**为什么拥堵呈现三角形而不是矩形？**
+
+理解这一点对准确预测至关重要：
+
+1. **拥堵的形成过程**：
+   - 拥堵从某一点开始（通常是瓶颈路段）
+   - 随着时间推移，堵车队伍向上游（后方）延伸，长度逐渐变长
+   - 当车流量减少或瓶颈缓解后，拥堵从前端开始消散，长度逐渐缩短
+   - 这个"扩展-消散"过程在时空图上呈现为**三角形**
+
+2. **三角形底边的物理意义**：
+   - 三角形的底边代表拥堵最前端（最靠近瓶颈的位置）
+   - **关键特性**：前端车辆虽然速度慢，但可以持续往前移动
+   - 因此前端的KP位置基本保持不变（底边垂直于KP轴）
+   - 而后方堵车队伍在不断延伸（斜边表示队伍尾部的移动）
+
+3. **梯形的物理意义**：
+   - 当拥堵峰值持续较长时间时，形成梯形
+   - 梯形的两个垂直边都代表拥堵的前端和后端在特定时刻的位置
+   - ⚠️ 重要：梯形的上下两条边**不能是水平线**，必须是倾斜的连接线
+   - 原因：拥堵的开始时间和结束时间在不同位置通常不同
+
+**⚠️ 关键约束：预测形状的边界规则**
+- ✅ **三角形**：必须有且仅有一条边垂直于KP轴（底边），其余两条边倾斜
+- ✅ **梯形**：必须有且仅有两条边垂直于KP轴（左右两边），上下两条边必须倾斜
+- ❌ **绝对禁止矩形**：四条边有两条垂直+两条水平的矩形
+- ❌ **绝对禁止水平边**：除了垂直边之外，其他边都不能是完全水平的（时间坐标不能完全相同）
+- 💡 **检查方法**：如果是梯形，4个顶点的时间坐标必须有变化，不能出现两个顶点时间完全相同（除非这两个顶点在同一条垂直边上）
+
+## 人类专家的分析方法（你需要模拟这个思维过程）
+
+### 核心原理
+**三年数据重叠的区域，今年更可能再次发生拥堵**
+
+人类专家通过以下步骤进行预测：
+
+### 步骤1: 识别空间聚集
+- **关键指标**: 横坐标（KP位置）
+- **判断逻辑**:
+  - 多个三角形的KP位置接近（建议±5-10km范围内）→ 说明是**同一路段**
+  - **三年数据都有的位置** → 该路段拥堵概率极高
+  - **两年数据有的位置** → 该路段拥堵概率较高
+  - **只有一年数据的位置** → 可能是偶发事件，不预测
+
+### 步骤2: 识别时间聚集
+- **关键指标**: 纵坐标（时间）
+- **判断逻辑**:
+  - 相同时间段（±2-4小时内）发生的拥堵 → 可能是**同一拥堵模式**（如早高峰）
+  - 时间差距很大（>4小时）但位置相同 → 是**同一天的不同时段**的拥堵，应分开预测
+
+### 步骤3: 绘制预测区域（核心输出）
+人类专家会用**大三角形或梯形**框住聚集的小三角形，作为今年的预测：
+
+#### 情况A: 三角形预测（标准情况）
+- **适用场景**: 拥堵峰值时间相对集中
+- **绘制方法**（覆盖所有聚集的小三角形）:
+  - **底边（垂直线）**: 在拥堵前端KP位置（通常是最小KP），连接时间范围
+    - 顶点1: [最小KP, 最早时间]
+    - 顶点2: [最小KP, 最晚时间]
+  - **顶点（峰值）**: 拥堵延伸到的最远位置（通常是最大KP）
+    - 顶点3: [最大KP, 峰值平均时间]
+- **⚠️ 几何约束**:
+  - 底边必须是垂直线（顶点1和2的KP相同）
+  - 顶点3的KP必须不同（形成有面积的三角形，不是线段）
+  - 三角形应该能覆盖大部分聚集的小三角形
+
+#### 情况B: 梯形预测（拥堵持续时间长）
+- **适用场景**:
+  - 同一横坐标区间有很多三角形
+  - 但这些三角形的**纵坐标（时间）差距较大**（>2小时）
+  - 说明拥堵峰值可能会**持续一段时间**
+- **绘制方法**（覆盖所有聚集的小三角形，逆时针顺序）:
+  - **左边（前端垂直线）**: 最小KP位置
+    - 顶点1: [最小KP, 前端最早时间]
+    - 顶点4: [最小KP, 前端最晚时间]
+  - **右边（后端垂直线）**: 最大KP位置
+    - 顶点2: [最大KP, 后端最早时间]（通常与顶点1时间不同）
+    - 顶点3: [最大KP, 后端最晚时间]（通常与顶点4时间不同）
+- **⚠️ 几何约束**:
+  - 左右两边都必须是垂直线（左边两顶点KP相同，右边两顶点KP相同）
+  - 前端KP和后端KP必须不同（形成有面积的梯形，不是线段）
+  - ❌ **禁止水平边**：顶点1和顶点2的时间通常不同，顶点3和顶点4的时间也通常不同
+  - 梯形应该能覆盖大部分聚集的小三角形
+
+**🚨 绝对禁止的形状**：
+- ❌ **标准矩形**（左右两边垂直 + 上下两边水平）- 这是最常见的错误！
+  - 检查：如果vertices[0][1] == vertices[1][1]（下边水平）并且vertices[2][1] == vertices[3][1]（上边水平），这是矩形，禁止！
+- ❌ 平行四边形（没有垂直边）
+- ❌ 任何没有垂直边的四边形
+- ❌ 退化成线段或点的形状（所有顶点KP相同或所有时间相同）
+
+**💡 关键理解**：
+- 预测形状是一个**大的外包形状**，应该能覆盖聚类中的多个小三角形
+- 不要把预测形状缩小成单个点或线段
+- 从聚类中的所有三角形找出最小KP和最大KP，用它们定义预测形状的边界
+- 例如：如果聚类包含KP从30到50km的多个三角形，预测三角形的KP范围应该接近[30, 50]，而不是[30, 30]
+
+### 步骤4: 综合判断（需要深度思考）
+在聚类时，需要权衡以下因素：
+
+1. **优先考虑位置（横坐标）**:
+   - 同一路段的拥堵更可能归为同一热点
+   - 即使时间有差异，也要考虑是否是同一拥堵的不同阶段
+
+2. **谨慎处理时间差异（纵坐标）**:
+   - 如果KP相近但时间差很大（>4小时）→ 可能是独立的两次拥堵
+   - 例如：早高峰（7-9点）和晚高峰（17-19点）应该分开预测
+
+3. **年份重复率**:
+   - 三年都出现的模式 → 高优先级，必须预测
+   - 两年出现的模式 → 中优先级，需要预测
+   - 仅一年出现的模式 → 低优先级，如果孤立则可忽略
+
+4. **形状一致性**:
+   - 如果多个三角形形状相似（大小、朝向接近）→ 说明拥堵模式稳定
+   - 如果形状差异很大 → 需要考虑用梯形来覆盖变化范围
+
+## 历史拥堵事件详细数据
+
+以下是{triangle_count}个历史拥堵事件的详细坐标{f'（显示{max_triangles_display}个）' if has_more else ''}：
+
+```json
+{json.dumps(triangles_data, ensure_ascii=False, indent=2)}
+```
+{('⚠️ 注意：还有' + str(triangle_count - max_triangles_display) + '个事件未显示，但你应该基于所有事件进行分析') if has_more else ''}
+
+
+## 你的分析任务
+
+请**像人类专家一样深度思考**，按照以下步骤分析：
+
+### 第1步：空间聚类（重要！）
+- 观察哪些三角形在**横坐标（KP）上接近**（±5-10km内）
+- 不要过度严格：即使KP不完全相同，只要在合理范围内就应该考虑聚在一起
+- 例如：KP在30-35km之间的三角形可以聚为一类，不要只选择KP完全相同的
+
+### 第2步：时间检查
+对于空间聚集的三角形，检查**纵坐标（时间）是否也接近**（±2-4小时内）
+
+### 第3步：年份验证
+统计每个聚类包含几年的数据（理想情况应该有2-3年的数据重叠）
+
+### 第4步：绘制预测图形
+- 如果峰值时间集中 → 用**三角形**（3个顶点，必须有一条垂直边）
+- 如果峰值时间分散 → 用**梯形**（4个顶点，左右两边必须垂直）
+- **关键检查**：确保你的预测形状符合交通物理规律
+  - 三角形：底边的两个顶点必须有相同的KP值（垂直于X轴）
+  - 梯形：左边两顶点KP值相同，右边两顶点KP值相同
+  - ❌ 禁止：生成没有垂直边的矩形或平行四边形
+
+### 第5步：描述与置信度
+为每个预测区域写清楚：
+- 位置范围（KP多少到多少）
+- 时间范围（几点到几点）
+- 历史频次（三年中出现几次）
+- 为什么归为一类（解释理由）
+
+## 输出格式要求
+
+对每个识别出的拥堵预测区域，你需要提供以下信息：
+
+### 必填字段
+- **hotspot_id**: 预测区域编号（从1开始递增）
+- **kp_range**: KP范围 [起始km, 结束km]
+- **time_range**: 时间范围 [起始分钟, 结束分钟]
+- **included_triangle_ids**: 包含的历史三角形ID列表
+- **frequency**: 历史拥堵频次（包含多少个三角形）
+- **years_coverage**: 年份覆盖情况，列出包含哪几年的数据（如[2014, 2018, 2024]）
+- **severity**: 严重程度
+  - "low": 2-3个事件或仅1年数据
+  - "medium": 4-6个事件或2年数据
+  - "high": 7个以上事件或3年数据都有
+- **description**: 详细描述（包括时间段、位置、为什么归为一类）
+- **reasoning**: 分析推理过程（为什么这些三角形应该归为一类？）
+
+### 预测图形（核心输出）
+- **prediction_shape**: 预测图形的类型和顶点坐标
+  - **shape_type**: "triangle" 或 "trapezoid"
+  - **vertices**: 顶点坐标列表
+    - 三角形：3个顶点 [[kp1, time1], [kp2, time2], [kp3, time3]]
+    - 梯形：4个顶点 [[kp1, time1], [kp2, time2], [kp3, time3], [kp4, time4]]
+
+**三角形顶点顺序（逆时针）** - 符合交通物理规律:
+1. 底边顶点1: [前端KP, 开始时间]  ← 垂直底边的下端点
+2. 底边顶点2: [前端KP, 结束时间]  ← 垂直底边的上端点（KP与顶点1相同！）
+3. 峰值顶点: [后端KP, 峰值时间]   ← 拥堵最远延伸点（KP不同于前两个顶点！）
+
+**⚠️ 约束检查**:
+- vertices[0][0] == vertices[1][0] (底边两顶点KP必须相同 - 形成垂直边)
+- vertices[2][0] != vertices[0][0] (峰值顶点的KP必须不同 - 形成三角形，不是线段！)
+- 前端KP通常是拥堵开始位置（较小的KP），后端KP是拥堵延伸到的最远位置（较大的KP）
+
+**梯形顶点顺序（逆时针）** - 符合交通物理规律:
+1. 左下角: [前端KP, 前端开始时间]      ← 左垂直边的下端点
+2. 右下角: [后端KP, 后端开始时间]      ← 右垂直边的下端点（KP不同于顶点1！时间也通常不同！）
+3. 右上角: [后端KP, 后端结束时间]      ← 右垂直边的上端点（KP与顶点2相同！）
+4. 左上角: [前端KP, 前端结束时间]      ← 左垂直边的上端点（KP与顶点1相同！时间通常与顶点3不同！）
+
+**⚠️ 约束检查**:
+- vertices[0][0] == vertices[3][0] (左边两顶点KP必须相同 - 形成左垂直边)
+- vertices[1][0] == vertices[2][0] (右边两顶点KP必须相同 - 形成右垂直边)
+- vertices[0][0] != vertices[1][0] (前端和后端KP必须不同 - 形成梯形，不是线段！)
+- **❌ 禁止水平边约束**:
+  - vertices[0][1] != vertices[1][1] (下边不能是水平线 - 前后端开始时间通常不同)
+  - vertices[2][1] != vertices[3][1] (上边不能是水平线 - 前后端结束时间通常不同)
+  - 如果违反此约束，你得到的是矩形，必须避免！
+
+## 输出JSON格式示例
+
+**必须严格按照以下JSON格式输出，不要添加任何markdown标记或其他文字：**
+
+{{
+    "direction": "{direction}",
+    "hotspots": [
+        {{
+            "hotspot_id": 1,
+            "kp_range": [23.5, 31.2],
+            "time_range": [420, 720],
+            "included_triangle_ids": [1, 3, 5, 8, 12],
+            "frequency": 5,
+            "years_coverage": [2014, 2018, 2024],
+            "severity": "high",
+            "description": "早高峰KP23.5-31.2区间持续拥堵，三年数据均有，高概率再次发生",
+            "reasoning": "这5个三角形在横坐标（KP23-31km）和纵坐标（7-12点）上都高度聚集，且三年数据均有出现，说明是稳定的拥堵模式。由于时间跨度长，使用梯形预测。注意：前端（KP23.5）在450分开始、680分结束，后端（KP31.2）在420分开始、720分结束，形成倾斜的上下边，避免矩形",
+            "prediction_shape": {{
+                "shape_type": "trapezoid",
+                "vertices": [
+                    [23.5, 450],
+                    [31.2, 420],
+                    [31.2, 720],
+                    [23.5, 680]
+                ]
+            }}
+        }},
+        {{
+            "hotspot_id": 2,
+            "kp_range": [8.5, 15.0],
+            "time_range": [1020, 1140],
+            "included_triangle_ids": [2, 6, 9],
+            "frequency": 3,
+            "years_coverage": [2018, 2024],
+            "severity": "medium",
+            "description": "傍晚KP8.5-15.0区间短时拥堵，峰值集中",
+            "reasoning": "这3个三角形的KP范围从8.5到15.0km（空间聚集），时间集中在17-18点（时间聚集），适合用三角形预测。拥堵从KP8.5开始（前端，垂直底边），向KP15.0方向延伸（后端，顶点）。注意底边的两个顶点KP相同（8.5），峰值顶点KP不同（15.0），形成有面积的三角形",
+            "prediction_shape": {{
+                "shape_type": "triangle",
+                "vertices": [
+                    [8.5, 1020],
+                    [8.5, 1140],
+                    [15.0, 1080]
+                ]
+            }}
+        }}
+    ],
+    "summary": {{
+        "total_hotspots": 2,
+        "most_severe_hotspot_id": 1,
+        "analysis_confidence": 0.90,
+        "reasoning_summary": "识别出2个高概率拥堵区域，其中hotspot 1因三年数据全覆盖被标记为高严重度。所有预测形状均符合交通物理规律（三角形有垂直底边，梯形有垂直两边）"
+    }}
+}}
+
+## 重要提示
+1. **优先预测三年数据都有的区域** - 这些最可靠
+2. **谨慎对待单年数据** - 可能是偶发事件，置信度要降低
+3. **选择合适的形状** - 峰值集中用三角形，峰值分散用梯形
+4. **严格遵守几何约束（关键！）**：
+   - ✅ 三角形：底边两顶点KP值必须相同（垂直于X轴）
+   - ✅ 梯形：左边两顶点KP值相同，右边两顶点KP值相同，但上下边时间必须不同
+   - ❌ **绝对禁止矩形**：不能生成上下边水平的矩形（检查：vertices[0][1] != vertices[1][1]）
+   - ❌ 绝对禁止：生成任何没有垂直边的形状
+   - 💡 原理：拥堵前端位置固定，后端队伍延伸和消散，形成三角形/梯形
+5. **提供清晰的推理** - 解释为什么这样分类，增强可解释性
+6. **如果没有明显聚集** - hotspots可以是空数组[]，但要在reasoning_summary中说明原因
+7. **自我检查（必须执行！）**：
+   - 输出前验证每个预测形状是否符合交通物理规律
+   - 特别检查是否生成了矩形（上下边水平+左右边垂直）
+   - 如果是梯形，确保4个顶点的时间坐标不会形成两条水平线
+"""
+        return prompt
+
+    @staticmethod
+    def get_example_output() -> Dict[str, Any]:
+        """获取输出格式示例"""
+        return {
+            "direction": "上",
+            "hotspots": [
+                {
+                    "hotspot_id": 1,
+                    "kp_range": [23.5, 31.2],
+                    "time_range": [960, 1200],
+                    "included_triangle_ids": [1, 3, 5, 8, 12],
+                    "frequency": 5,
+                    "severity": "high",
+                    "description": "下午4点到晚上8点的晚高峰拥堵"
+                }
+            ],
+            "summary": {
+                "total_hotspots": 1,
+                "most_severe_hotspot_id": 1,
+                "analysis_confidence": 0.85
+            }
+        }
+
+
+# 便捷函数
+def build_analysis_prompt(
+    direction: str,
+    csv_files: List[str],
+    triangles: List[Dict[str, Any]],
+    max_triangles: int = None  # None = 传输所有三角形
+) -> str:
+    """
+    构建分析prompt的便捷函数（使用混合格式：坐标+统计信息）
+
+    Args:
+        direction: 方向
+        csv_files: CSV文件列表
+        triangles: 三角形数据
+        max_triangles: 最多传输的三角形数量，None表示传输所有
+
+    Returns:
+        完整的prompt字符串
+    """
+    if not triangles:
+        return ""
+
+    # 第一步：规范化三角形数据（去除重复顶点，确保三角形3个点，四边形4个点）
+    print(f"\n🔧 Normalizing {len(triangles)} shapes before LLM analysis...")
+    triangles = DataPreparer.normalize_triangle_shapes(triangles)
+
+    if not triangles:
+        print("⚠️ Warning: No valid triangles after normalization")
+        return ""
+
+    # 提取统计信息
+    kp_values = [t.get('kp_start', 0) for t in triangles] + [t.get('kp_end', 0) for t in triangles]
+    time_values = [t.get('time_start', 0) for t in triangles] + [t.get('time_end', 0) for t in triangles]
+
+    kp_range = [min(kp_values), max(kp_values)]
+    time_range = [min(time_values), max(time_values)]
+
+    # 准备三角形数据（混合格式：包含vertices坐标 + 统计信息）
+    triangles_data = []
+    for i, t in enumerate(triangles):
+        # 提取顶点坐标
+        vertices = t.get('vertices', [])
+
+        # 如果没有vertices字段，尝试从边界构造（向后兼容）
+        if not vertices:
+            # 构造简单三角形顶点（基于kp_start, kp_end, time等）
+            kp_start = t.get('kp_start', 0)
+            kp_end = t.get('kp_end', 0)
+            time_start = t.get('time_start', 0)
+            time_end = t.get('time_end', 0)
+            time_peak = t.get('time_peak', (time_start + time_end) / 2)
+
+            vertices = [
+                (kp_start, time_start),
+                (kp_end, time_peak),
+                (kp_start, time_end)
+            ]
+
+        # 格式化顶点坐标（添加可读的时间字符串）
+        formatted_vertices = []
+        for v in vertices:
+            kp, time_min = v
+            time_hour, time_min_part = divmod(int(time_min), 60)
+            formatted_vertices.append({
+                "kp": round(kp, 2),
+                "time_min": int(time_min),
+                "time_str": f"{time_hour:02d}:{time_min_part:02d}"
+            })
+
+        # 构建混合格式的三角形数据
+        triangle_data = {
+            "id": i,
+            "shape_type": t.get('shape_type', 'triangle'),  # 形状类型
+            "vertices": formatted_vertices,  # 完整坐标
+            "summary": {  # 统计摘要（便于LLM快速理解）
+                "kp_range": [round(t.get('kp_start', 0), 2), round(t.get('kp_end', 0), 2)],
+                "kp_span": round(t.get('width', 0) if 'width' in t else t.get('kp_end', 0) - t.get('kp_start', 0), 2),
+                "time_range": [int(t.get('time_start', 0)), int(t.get('time_end', 0))],
+                "duration_min": int(t.get('height', 0) if 'height' in t else t.get('time_end', 0) - t.get('time_start', 0)),
+                "peak_time": int(t.get('time_peak', 0)),
+                "area": round(t.get('area', 0), 2)
+            }
+        }
+
+        triangles_data.append(triangle_data)
+
+    # 限制数量（如果指定）
+    has_more = False
+    if max_triangles and len(triangles_data) > max_triangles:
+        triangles_data = triangles_data[:max_triangles]
+        has_more = True
+
+    return PromptTemplates.get_hotspot_analysis_prompt(
+        direction=direction,
+        csv_files=csv_files,
+        triangle_count=len(triangles),
+        kp_range=kp_range,
+        time_range=time_range,
+        triangles_data=triangles_data,
+        max_triangles_display=len(triangles_data),
+        has_more=has_more
+    )

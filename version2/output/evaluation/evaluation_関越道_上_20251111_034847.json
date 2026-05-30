@@ -1,0 +1,37 @@
+{
+  "evaluation_time": "2025-11-11 03:48:47",
+  "grid_configuration": {
+    "road_type": "関越道",
+    "direction": "上",
+    "kp_intervals_count": 68,
+    "time_step_min": 60
+  },
+  "results": {
+    "上": {
+      "polygon_iou": 0.23774805988714806,
+      "grid_metrics": {
+        "precision": 0.511727078891258,
+        "recall": 0.7142857142857143,
+        "f1_score": 0.5962732919254659,
+        "grid_iou": 0.4247787610619469
+      },
+      "spatial_iou": 0.5498627630375114,
+      "temporal_iou": 0.9719101123595506,
+      "combined_iou": 0.5344171798061206,
+      "pred_count": 3,
+      "gt_count": 25
+    },
+    "average": {
+      "polygon_iou": 0.23774805988714806,
+      "grid_metrics": {
+        "precision": 0.511727078891258,
+        "recall": 0.7142857142857143,
+        "f1_score": 0.5962732919254659,
+        "grid_iou": 0.4247787610619469
+      },
+      "spatial_iou": 0.5498627630375114,
+      "temporal_iou": 0.9719101123595506,
+      "combined_iou": 0.5344171798061206
+    }
+  }
+}

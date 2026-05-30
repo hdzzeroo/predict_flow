@@ -1,6 +1,6 @@
 """
-Excel格式输出生成器
-将现有系统的聚类结果转换为渋滞予測フォーマット格式
+Excelフォーマット出力ジェネレーター
+既存システムのクラスター結果を渋滞予測フォーマットに変換
 """
 
 import pandas as pd
@@ -11,7 +11,7 @@ import os
 class ExcelOutputGenerator:
     
     def __init__(self):
-        """初始化Excel输出生成器"""
+        """Excel出力生成器を初期化"""
         self.road_data = {}  # 道路信息缓存
         self.road_name_map = {
             '関越道': '関越自動車道',
@@ -154,14 +154,14 @@ class ExcelOutputGenerator:
     
     def calculate_congestion_pattern(self, hull: Dict[str, Any], peak_congestion_km: float = 5.0) -> List[str]:
         """
-        根据三角形形状计算拥堵长度的时间分布模式
+        根据三角形形状拥堵を計算長さ的时间分布模式
         
         Args:
             hull: 外包大三角形数据
-            peak_congestion_km: 峰值拥堵长度(km)
+            peak_congestion_km: ピーク時の拥堵長さ(km)
             
         Returns:
-            72个小时的拥堵长度列表
+            72時間的拥堵長さ列表
         """
         # 获取时间范围信息
         time_center = hull.get('time_center', hull.get('center', [0, 0])[1])
@@ -186,7 +186,7 @@ class ExcelOutputGenerator:
         if start_hour >= 72 or end_hour < 0 or start_hour >= end_hour:
             return congestion_data
         
-        # 计算拥堵分布模式（三角形分布）
+        # 拥堵を計算分布模式（三角形分布）
         duration = end_hour - start_hour + 1
         
         if duration <= 1:
@@ -208,16 +208,16 @@ class ExcelOutputGenerator:
                         # 下降阶段  
                         distance_ratio = (end_hour - hour + 1) / (end_hour - peak_hour + 1) if end_hour > peak_hour else 1
                     
-                    # 计算拥堵长度（三角形分布，边缘趋向于0）
+                    # 拥堵を計算長さ（三角形分布，边缘趋向于0）
                     congestion_length = peak_congestion_km * distance_ratio
                     
-                    # 设置最小阈值，小于1km的设为0，明确表示无拥堵
+                    # 设置最小阈值，小于1km的设为0，明确表示拥堵なし
                     if congestion_length >= 1.0:
                         congestion_data[hour] = str(int(congestion_length))
                     else:
                         congestion_data[hour] = '0'
         
-        # 确保开始和结尾时间为0（明确表示拥堵开始和结束）
+        # 确保开始和结尾时间为0（明确表示拥堵開始和结束）
         if start_hour < 72:
             congestion_data[start_hour] = '0'
         if end_hour < 72:
@@ -262,7 +262,7 @@ class ExcelOutputGenerator:
         # 检查是否有LLM分析结果
         llm_analysis = workflow_result.get('llm_analysis', {})
 
-        # 处理方向数据
+        # 方向データを処理数据
         direction_data = workflow_result.get('direction_data', {})
 
         if not direction_data:
@@ -293,7 +293,7 @@ class ExcelOutputGenerator:
                 continue
 
             for hull in hulls_to_process:
-                # 获取聚类中心位置和时间信息
+                # 获取クラスタ中心位置和时间信息
                 kp_center = hull.get('kp_center', hull.get('center', [0, 0])[0])
                 time_center = hull.get('time_center', hull.get('center', [0, 0])[1])
                 
@@ -311,10 +311,10 @@ class ExcelOutputGenerator:
                 # 生成瓶颈描述
                 bottleneck = self.generate_bottleneck_description(road_section, kp_center)
                 
-                # 计算峰值拥堵长度（从hull数据中获取或使用默认值）
+                # 计算ピーク時の拥堵長さ（从hull数据中获取或使用默认值）
                 peak_congestion_km = 5.0  # 默认5km
                 if 'cluster_size' in hull:
-                    # 根据聚类大小调整峰值拥堵长度
+                    # 根据クラスタ大小调整ピーク時の拥堵長さ
                     cluster_size = hull['cluster_size']
                     peak_congestion_km = min(10.0, max(2.0, cluster_size * 1.5))
                 
@@ -336,7 +336,7 @@ class ExcelOutputGenerator:
                     f"{kp_center:.1f} ",                 # 8. KP (加空格匹配模板)
                     time_range,                          # 9. 時間帯
                     peak_time,                           # 10. ピーク時間
-                    f"{int(peak_congestion_km)}km",      # 11. ピーク時の渋滞長 (根据聚类计算)
+                    f"{int(peak_congestion_km)}km",      # 11. ピーク時の渋滞長 (根据クラスタ计算)
                     "00:04",                             # 12. 通常所要時間 (模板值)
                     "00:15",                             # 13. 渋滞所要時間 (模板值)
                     "00:11",                             # 14. 増加所要時間 (模板值)
@@ -401,7 +401,7 @@ class ExcelOutputGenerator:
         df = self.convert_workflow_to_csv_format(workflow_result, target_date)
         
         if df.empty:
-            print("警告: 没有生成任何拥堵预测数据")
+            print("警告: 没有生成任何拥堵予測データ")
             return output_path
         
         try:
@@ -426,7 +426,7 @@ class ExcelOutputGenerator:
                 df.to_csv(f, index=False, header=False, quoting=1)  # header=False 不写入默认列名
             
             print(f"CSV输出已保存至: {output_path}")
-            print(f"共生成 {len(df)} 条拥堵预测记录")
+            print(f"共生成 {len(df)} 条拥堵予測レコード")
             return output_path
             
         except Exception as e:
@@ -448,7 +448,7 @@ class ExcelOutputGenerator:
         df = self.convert_workflow_to_csv_format(workflow_result, target_date)
         
         if df.empty:
-            print("警告: 没有生成任何拥堵预测数据")
+            print("警告: 没有生成任何拥堵予測データ")
             return output_path
         
         try:
@@ -476,7 +476,7 @@ class ExcelOutputGenerator:
                     worksheet.column_dimensions[column_letter].width = adjusted_width
             
             print(f"Excel输出已保存至: {output_path}")
-            print(f"共生成 {len(df)} 条拥堵预测记录")
+            print(f"共生成 {len(df)} 条拥堵予測レコード")
             return output_path
             
         except Exception as e:
@@ -485,7 +485,7 @@ class ExcelOutputGenerator:
 
 # 辅助函数
 def generate_excel_prediction_output(workflow_result: Dict[str, Any], output_dir: str = None, format_type: str = 'csv') -> str:
-    """生成格式化的拥堵预测输出"""
+    """整形された拥堵予測出力を生成"""
 
     if output_dir is None:
         # 使用相对路径，自动适配当前目录
@@ -537,7 +537,7 @@ def generate_excel_prediction_output(workflow_result: Dict[str, Any], output_dir
         return generator.save_excel_output(workflow_result, output_path)
 
 def generate_csv_prediction_output(workflow_result: Dict[str, Any], output_dir: str = None) -> str:
-    """生成CSV格式的拥堵预测输出"""
+    """CSV形式の拥堵予測出力を生成"""
     return generate_excel_prediction_output(workflow_result, output_dir, format_type='csv')
 
 if __name__ == "__main__":

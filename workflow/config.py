@@ -1,5 +1,5 @@
 """
-配置文件 - 管理API密钥和系统设置
+設定ファイル - APIキーとシステム設定を管理
 """
 
 import os
@@ -7,116 +7,116 @@ from typing import Optional
 
 class Config:
     """
-    系统配置类
+    システム設定クラス
     """
-    
+
     def __init__(self):
-        # OpenAI API配置
+        # OpenAI API設定
         self.openai_api_key: Optional[str] = None
-        self.openai_model: str = "gpt-4o"  # 使用gpt-4o (更强的推理能力)
-        self.openai_temperature: float = 0.0  # 设置为0，确保输出结果完全一致
-        self.openai_max_tokens: int = 8000  # 足够输出detailed thinking + hotspots
-        self.openai_timeout: int = 60  # gpt-4o稍慢，保持60秒超时
-        
-        # 数据路径配置（相对于当前文件位置）
+        self.openai_model: str = "gpt-4o"  # gpt-4oを使用（より強力な推論能力）
+        self.openai_temperature: float = 0.0  # 0に設定し、出力結果を完全に一致させる
+        self.openai_max_tokens: int = 8000  # detailed thinking + ホットスポットの出力が十分
+        self.openai_timeout: int = 60  # gpt-4oは少し遅い、60秒のタイムアウトを維持
+
+        # データパス設定（現在ファイル位置からの相対パス）
         self.data_base_dir: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
-        
-        # LLM配置
-        self.use_real_llm: bool = True  # 是否使用真实LLM API
-        self.fallback_on_error: bool = True  # API失败时是否降级
-        
-        # 加载配置
+
+        # LLM設定
+        self.use_real_llm: bool = True  # 実際のLLM APIを使用するか
+        self.fallback_on_error: bool = True  # API失敗時にフォールバックするか
+
+        # 設定を読み込み
         self.load_config()
-    
+
     def load_config(self):
         """
-        从环境变量或配置文件加载设置
+        環境変数または設定ファイルから設定を読み込み
         """
-        # 从环境变量加载OpenAI API密钥
+        # 環境変数からOpenAI APIキーを読み込み
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
-        
-        # 从环境变量加载其他设置
+
+        # 環境変数から他の設定を読み込み
         if os.getenv('OPENAI_MODEL'):
             self.openai_model = os.getenv('OPENAI_MODEL')
-        
+
         if os.getenv('DATA_BASE_DIR'):
             self.data_base_dir = os.getenv('DATA_BASE_DIR')
-    
+
     def set_openai_api_key(self, api_key: str):
         """
-        设置OpenAI API密钥
+        OpenAI APIキーを設定
         """
         self.openai_api_key = api_key
-        print("✅ OpenAI API密钥已设置")
-    
+        print("✅ OpenAI APIキーが設定されました")
+
     def get_openai_api_key(self) -> Optional[str]:
         """
-        获取OpenAI API密钥
+        OpenAI APIキーを取得
         """
         return self.openai_api_key
-    
+
     def is_llm_available(self) -> bool:
         """
-        检查LLM是否可用
+        LLMが利用可能かチェック
         """
         return self.use_real_llm and self.openai_api_key is not None
-    
+
     def print_config(self):
         """
-        打印当前配置（不显示敏感信息）
+        現在の設定を出力（機密情報を表示しない）
         """
-        print("📋 当前配置:")
-        print(f"  🤖 OpenAI模型: {self.openai_model}")
+        print("📋 現在の設定:")
+        print(f"  🤖 OpenAIモデル: {self.openai_model}")
         print(f"  🌡️  温度: {self.openai_temperature}")
         print(f"  📊 最大Token: {self.openai_max_tokens}")
-        print(f"  ⏱️  超时: {self.openai_timeout}秒")
-        print(f"  📁 数据目录: {self.data_base_dir}")
-        print(f"  🔑 API密钥: {'已设置' if self.openai_api_key else '未设置'}")
-        print(f"  🤖 使用真实LLM: {'是' if self.use_real_llm else '否'}")
+        print(f"  ⏱️  タイムアウト: {self.openai_timeout}秒")
+        print(f"  📁 データディレクトリ: {self.data_base_dir}")
+        print(f"  🔑 APIキー: {'設定済み' if self.openai_api_key else '未設定'}")
+        print(f"  🤖 実際のLLMを使用: {'はい' if self.use_real_llm else 'いいえ'}")
 
-# 全局配置实例
+# グローバル設定インスタンス
 config = Config()
 
 def setup_api_key():
     """
-    交互式设置API密钥
+    インタラクティブにAPIキーを設定
     """
     if config.openai_api_key:
-        print(f"✅ API密钥已存在: {config.openai_api_key[:8]}...")
-        choice = input("是否要更新API密钥? (y/n, 默认n): ").strip().lower()
+        print(f"✅ APIキーが既に存在します: {config.openai_api_key[:8]}...")
+        choice = input("APIキーを更新しますか? (y/n, デフォルトn): ").strip().lower()
         if choice not in ['y', 'yes']:
             return
-    
-    print("\n🔑 设置OpenAI API密钥")
+
+    print("\n🔑 OpenAI APIキーを設定")
     print("─" * 30)
-    print("你可以通过以下方式设置API密钥:")
-    print("1. 直接输入")
-    print("2. 设置环境变量 OPENAI_API_KEY")
-    print("3. 跳过（使用本地解析）")
-    
-    choice = input("\n请选择 (1/2/3, 默认1): ").strip() or "1"
-    
+    print("APIキーを設定する方法:")
+    print("1. 直接入力")
+    print("2. 環境変数 OPENAI_API_KEY を設定")
+    print("3. スキップ（ローカル正規表現解析を使用）")
+
+    choice = input("\n選択してください (1/2/3, デフォルト1): ").strip() or "1"
+
     if choice == "1":
-        api_key = input("请输入你的OpenAI API密钥: ").strip()
+        api_key = input("OpenAI APIキーを入力してください: ").strip()
         if api_key:
             config.set_openai_api_key(api_key)
         else:
-            print("❌ API密钥不能为空")
-    
+            print("❌ APIキーは空にできません")
+
     elif choice == "2":
-        print("请在终端中运行:")
+        print("ターミナルで以下を実行してください:")
         print("export OPENAI_API_KEY='your-api-key-here'")
-        print("然后重新启动程序")
-    
+        print("その後、プログラムを再起動してください")
+
     elif choice == "3":
-        print("⚠️ 跳过API密钥设置，将使用本地正则表达式解析")
+        print("⚠️ APIキー設定をスキップし、ローカル正規表現解析を使用します")
         config.use_real_llm = False
-    
+
     else:
-        print("❌ 无效选择")
+        print("❌ 無効な選択です")
 
 if __name__ == "__main__":
-    # 测试配置
+    # 設定テスト
     config.print_config()
     setup_api_key()
     config.print_config() 
